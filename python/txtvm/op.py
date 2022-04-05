@@ -5,7 +5,8 @@ constant_canonical_key = '__constant__'
 
 def canonical_to_expr(c):
     elements = []
-    for k, v in sorted(c.items()):
+    # for k, v in sorted(c.items()):
+    for k, v in c.items():
         if k == constant_canonical_key:
             elements.append(_expr.const(v))
         elif v == 0:

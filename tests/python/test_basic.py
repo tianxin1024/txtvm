@@ -1,6 +1,5 @@
 import txtvm
 
-import ipdb
 
 def test_bind():
     x = txtvm.Var('x')
@@ -15,7 +14,6 @@ def test_basic():
     assert txtvm.format_str(c) == '(%s + %s)' % (a.name, b.name)
 
 def test_simplify():
-    ipdb.set_trace()
     a = txtvm.Var('a')
     b = txtvm.Var('b')
     e1 = a * (2 + 1) + b * 1

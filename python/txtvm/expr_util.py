@@ -113,7 +113,6 @@ def simplify(expr):
             Simplitied expression
     """
     def canonical(e, result_children):
-        import ipdb; ipdb.set_trace()
         if isinstance(e, _expr.BinaryOpExpr):
             return e.op.canonical(result_children[0], result_children[1])
         elif isinstance(e, _expr.UnaryOpExpr):
