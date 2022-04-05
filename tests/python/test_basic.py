@@ -1,5 +1,4 @@
 import txtvm
-from txtvm import expr
 
 import ipdb
 
