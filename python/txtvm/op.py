@@ -31,6 +31,9 @@ class AddOp(BinaryOp):
     def format_str(self, lhs, rhs):
         return '(%s + %s)' % (lhs, rhs)
 
+    def format_reduce_str(self, src, rd):
+        return "reduce_sum(%s, rdom=%s)" % (src, str(rd))
+
     def canonical(self, lhs, rhs):
         lhs = lhs.copy()
         for k, v in rhs.items():
@@ -120,3 +123,15 @@ _expr.__addop__ = add
 _expr.__subop__ = sub
 _expr.__mulop__ = mul
 _expr.__divop__ = div
+
+def reduce_sum(expr, rdom):
+    return _expr.ReduceExpr(add, expr, rdom)
+
+def reduce_prod(expr, rdom):
+    return _expr.ReduceExpr(mul, expr, rdom)
+
+def reduce_min(expr, rdom):
+    return _expr.ReduceExpr(min, expr, rdom)
+
+def reduce_max(expr, rdom):
+    return _expr.ReduceExpr(max, expr, rdom)
