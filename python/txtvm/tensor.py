@@ -8,7 +8,7 @@ class Tensor(object):
     def __init__(self, ndim, fcompute=None, name=None, shape=None):
         self.ndim = ndim
         if fcompute:
-            arg_names = fcompute.func_code.co_varnames
+            arg_names = fcompute.__code__.co_varnames
             assert(len(arg_names) == ndim)
             self.dim_index = [_expr.Var(n) for n in arg_names]
             self.expr = fcompute(*self.dim_index)
@@ -25,6 +25,7 @@ class Tensor(object):
 
         self.name = name if name else "TensorObj"
         self.inputs = None
+        self.rdom = None
 
     def __call__(self, *indices):
         if len(indices) != self.ndim:
@@ -46,16 +47,22 @@ class Tensor(object):
                 if isinstance(e, _expr.TensorReadExpr):
                     inputs.append(e.tensor)
             _expr_util.visit(self.expr, collect)
-        self.inputs = set(input)
+        self.inputs = set(inputs)
         return self.inputs
 
-    def infer_input_domains(self, out_domain, inputs):
+    def infer_input_domains(self, out_domain, inputs, red_domain=None):
         """Infer the input domains of each domain given output domains
 
             Parameters
             ----------
             out_domain : list if Range
                 Domain of each dimension.
+
+            red_domain : list of Range
+                Domain of reducetion variables, if this tensor
+                this can only be specified if
+                self.expr finishes with an ReduceExpr, and we can schedule
+                over the last reducetion that creates this tensor.
 
             Returns
             --------
@@ -65,6 +72,16 @@ class Tensor(object):
         assert len(out_domain) == len(self.dim_index)
         index_domains = {self.dim_index[i] : out_domain[i] for i in range(len(out_domain))}
 
+        begin_expr = self.expr
+        if red_domain:
+            if not isinstance(self.expr, _expr.ReduceExpr):
+                raise ValueError("red_domain must work with tensor that stores a reducetion")
+            rdom = self.expr.rdom
+            begin_expr = self.expr.src
+            assert len(red_domain) == len(rdom.index)
+            for i in range(len(red_domain)):
+                index_domains[rdom.index[i]] = red_domain[i]
+        
         iset = {}
         for t in inputs:
             assert t in self.input_tensors()
@@ -78,7 +95,7 @@ class Tensor(object):
             elif isinstance(e, _expr.TensorReadExpr):
                 if e.tensor in iset:
                     iset[e.tensor].append(e)
-        _expr_util.visit(self.expr, prepare)
+        _expr_util.visit(begin_expr, prepare)
         result = {}
         for k, v in iset.items():
             dm = [None] * len(v[0].indices)
@@ -90,4 +107,14 @@ class Tensor(object):
         return result
 
 
+    @property
+    def is_rtensor(self):
+        """Whether this tensor is a result of reduction
+            
+            Returns
+            -------
+            is_rtensor : Whether the tensor is RTensor
+        """
+        return self.expr and isinstance(self.expr, _expr.ReduceExpr)
+        
        
