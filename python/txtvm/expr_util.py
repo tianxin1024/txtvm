@@ -127,7 +127,7 @@ def simplify(expr):
     return _op.canonical_to_expr(transform(expr, canonical))
 
 
-def bind(expr, updata_dict):
+def bind(expr, update_dict):
     """Replace the variable in e by specification from kwarg
 
         Parameters
@@ -143,8 +143,8 @@ def bind(expr, updata_dict):
         eout = bind(e, update_dict={v1 : (x + 1)})
     """
     def replace(e, result_children):
-        if isinstance(e, _expr.Var) and e in updata_dict:
-            return updata_dict[e]
+        if isinstance(e, _expr.Var) and e in update_dict:
+            return update_dict[e]
         else:
             return expr_with_new_children(e, result_children)
     return transform(expr, replace)

@@ -12,12 +12,12 @@ class Range(object):
             begin = _expr.const(0)
         begin = _expr_util.simplify(_expr._symbol(begin))
         end = _expr_util.simplify(_expr._symbol(end))
-        self.begin = _expr._symbol(begin)
-        self.end = _expr._symbol(end)
+        self.begin = begin
+        self.end = end
         self.extent = _expr_util.simplify(end - begin)
 
     def is_value(self):
-        return isinstance(self.extent, _expr.ConstExpr) and self.extend.value == 1
+        return isinstance(self.extent, _expr.ConstExpr) and self.extent.value == 1
 
     def __str__(self):
         return "(%s, %s)" % (
@@ -34,7 +34,7 @@ class RangeInferError(ValueError):
 
 
 class RDom(object):
-    """reduction Domain
+    """Reduction Domain.
     """
     def __init__(self, domain):
         if isinstance(domain, Range):
@@ -95,7 +95,7 @@ def infer_range(e, range_dict, allow_unbind_var=True):
                 else:
                     raise ValueError("Cannot find var %s in range_dict" % e.name)
         else:
-            raise InferRangeError("cannot infer for %s" % _expr_util.format_str(e))
+            raise InferRangeError("cannot infer range for %s" % _expr_util.format_str(e))
     return _expr_util.transform(e, combine_range)
 
 def union_range(lhs, rhs):

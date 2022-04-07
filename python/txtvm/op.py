@@ -6,8 +6,8 @@ constant_canonical_key = '__constant__'
 def canonical_to_expr(c):
     elements = []
     for k, v in c.items():
-        
-        if k == constant_canonical_key:
+    # for k, v in sorted(c.items()):
+        if k == constant_canonical_key and v != 0:
             elements.append(_expr.const(v))
         elif v == 0:
             continue
@@ -54,7 +54,7 @@ class SubOp(BinaryOp):
             if k in lhs:
                 lhs[k] -= v
             else:
-                lhs[k] = v
+                lhs[k] = -v
         return lhs
 
 class MulOp(BinaryOp):
@@ -78,14 +78,14 @@ class MulOp(BinaryOp):
 
 class DivOp(BinaryOp):
     def format_str(self, lhs, rhs):
-        return '(%s - %s)' % (lhs, rhs)
+        return '(%s / %s)' % (lhs, rhs)
 
     def canonical(self, lhs, rhs):
         erhs =  canonical_to_expr(rhs)
         if isinstance(erhs, _expr.ConstExpr):
             lhs = lhs.copy()
             for k, v in lhs.items():
-                lhs[k] /= erhs.value
+                lhs[k] /= float(erhs.value)
             return lhs
         elhs = canonical_to_expr(lhs)
         return {elhs / erhs : 1}
@@ -103,14 +103,14 @@ class MaxOp(BinaryOp):
 
 class MinOp(BinaryOp):
     def format_str(self, lhs, rhs):
-        return 'max(%s, %s)' % (lhs, rhs)
+        return 'min(%s, %s)' % (lhs, rhs)
 
     def canonical(self, lhs, rhs):
         diff = SubOp().canonical(lhs, rhs)
         ediff = canonical_to_expr(diff)
         if isinstance(ediff, _expr.ConstExpr):
             return rhs if ediff.value >= 0 else lhs
-        return {MaxOp()(lhs, rhs) : 1}
+        return {MinOp()(lhs, rhs) : 1}
 
 
 add = AddOp()

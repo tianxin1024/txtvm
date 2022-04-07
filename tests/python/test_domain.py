@@ -7,6 +7,9 @@ def test_range_infer():
     z = x + y + t
     zr = txtvm.infer_range(z, {x: txtvm.Range(10, 20), y : txtvm.Range(10, 11)})
     assert str(zr) == "((20 + t0), (30 + t0))"
+    print(str(zr))
+    # TODO add 顺序相反
+    print("--------")
     # assert str(zr) == "((t0 + 20), (t0 + 30))"
 
 
