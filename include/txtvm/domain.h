@@ -2,12 +2,13 @@
 #define TXTVM_DOMAIN_H_
 
 #include <memory>
+#include "./base.h"
+#include "./array.h"
+#include "./expr.h"
 
 namespace txtvm {
 
-    class RDom {
-
-    }; // class end of RDom
+    // using Domain = Array<Range>
 
 }  // namespace txtvm
 

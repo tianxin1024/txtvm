@@ -29,7 +29,7 @@ namespace txtvm {
         * \param src left operand
         * \return the result expr
         */
-        Expr operator()(Expr lhs, Expr rhs) const;
+        Expr operator()(Expr src) const;
     }; // class end of UnaryOp
 
     class AddOp : public BinaryOp {
@@ -105,6 +105,12 @@ namespace txtvm {
 
     DEFINE_BINARY_OP_FUNCTION(max, MaxOp);
     DEFINE_BINARY_OP_FUNCTION(min, MinOp);
+
+
+    // overload negation
+    inline Expr operator-(Expr src) {
+        return src * (-1);
+    }
 
 } // namespace txtvm
 
