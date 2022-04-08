@@ -73,6 +73,11 @@ namespace txtvm {
         UnaryOpNode() {
             node_type_ = kUnaryOpNode;
         }
+        UnaryOpNode(const UnaryOp* op, Expr && src) 
+            : op(op), src(std::move(src)) {
+            node_type_ = kUnaryOpNode;
+            dtype_ = this->src.dtype();
+        }
         const char* type_key() const override {
             return "kUnaryOpNode";
         }
@@ -100,10 +105,10 @@ namespace txtvm {
         BinaryOpNode() {
             node_type_ = kBinaryOpNode;
         }
-        BinaryOpNode(const BinaryOp* op, Expr lhs, Expr rhs) 
-                : op(op), lhs(lhs), rhs(rhs) {
+        BinaryOpNode(const BinaryOp* op, Expr && lhs, Expr && rhs) 
+                : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {
             node_type_ = kBinaryOpNode;
-            dtype_ = lhs.dtype();
+            dtype_ = this->lhs.dtype();
         }
         const char* type_key() const override {
             return "BinaryOpNode";

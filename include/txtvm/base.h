@@ -67,7 +67,7 @@ namespace txtvm {
     class Node {
     public:
         /*! \brief virtual destructor */
-        virtual ~Node();
+        virtual ~Node() {}
         /*! \return The unique type key of the node */
         virtual const char* type_key() const = 0;
         /*! \brief verify the correctness of node struct after it get mutated by visitor */
@@ -89,8 +89,6 @@ namespace txtvm {
         */ 
         template<typename TNode>
         inline bool is_type() const;
-        /*! \return the node type */
-        inline NodeType node_type() const;
 
     protected:
         // node ref can see this
@@ -109,12 +107,15 @@ namespace txtvm {
        */
         template<typename TNode>
         inline const TNode* Get() const;
+        /*! \return the node type */
+        inline NodeType node_type() const;
         /*! \return wheyjer the expression is null */
         inline bool is_null() const;
 
-    protected:
         NodeRef() = default;
         explicit NodeRef(std::shared_ptr<Node> node) : node_(node) {}
+
+    protected:
         /*! \brief the internal node */
         std::shared_ptr<Node> node_;
     }; // class end of NodeRef 
@@ -130,13 +131,13 @@ namespace txtvm {
 
     };
 
-#define TVM_REGISTER_NODE_TYPE(TypeName)                                \
-      DMLC_REGISTRY_REGISTER(::tvm::NodeFactoryReg, NodeFactoryReg, TypeName) \
+#define TXTVM_REGISTER_NODE_TYPE(TypeName)                                        \
+      DMLC_REGISTRY_REGISTER(::txtvm::NodeFactoryReg, NodeFactoryReg, TypeName)   \
       .set_body([]() { return std::make_shared<TypeName>(); })
 
     // implementations of inline functions after this
-    inline NodeType Node::node_type() const {
-        return node_type_;
+    inline NodeType NodeRef::node_type() const {
+        return node_->node_type_;
     }
 
     template<typename TNode>

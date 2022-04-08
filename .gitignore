@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+dmlc-core/
+
 # C extensions
 *.so
 

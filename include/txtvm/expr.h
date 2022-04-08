@@ -31,13 +31,13 @@ namespace txtvm {
         * \brief copy constructor
         * \param other the input
         */
-        Expr(const Expr& other) = default;   // NOLINT(*)
+        Expr(const Expr& other) = default;  
 
         /*!
         * \brief move constructor
         * \param other the input
         */
-        Expr(Expr&& other) = default;   // NOLINT(*)
+        Expr(Expr&& other) = default; 
         
         /*!
         * \brief assign operator.
@@ -68,9 +68,19 @@ namespace txtvm {
         * \brief constructor from node pointer
         * \param nptr Another node shared pointer
         */
-        explicit Expr(std::shared_ptr<Node> nptr) : NodeRef(nptr) {}
+        explicit Expr(std::shared_ptr<Node>&& nptr) : NodeRef(std::move(nptr)) {}
         /*! \return the expression type of the expression  */
         inline DataType dtype() const;
+        // print the expression
+        friend std::ostream& operator<<(std::ostream &os, const Expr& e) {
+            e.Print(os);
+            return os;
+        }
+
+    private:
+        // print the expression
+        void Print(std::ostream& os) const;
+
     }; // class end of Expr
 
 
@@ -81,10 +91,8 @@ namespace txtvm {
     }; // class end of Var
 
 
-    /*! \brief */
     Expr IntConstant(int64_t value);
     Expr FloatConstant(int64_t value);
-    Expr operator+(Expr lhs, Expr rhs);
 
     /*! \brief base of expression node */
     class ExprNode : public Node {
