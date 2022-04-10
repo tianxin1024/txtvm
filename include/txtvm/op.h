@@ -1,5 +1,5 @@
-#ifndef TXTVM_OP_H
-#define TXTVM_OP_H
+#ifndef TXTVM_OP_H_
+#define TXTVM_OP_H_
 
 #include <string>
 #include "./expr.h"
@@ -115,4 +115,4 @@ namespace txtvm {
 } // namespace txtvm
 
 
-#endif  // TXTVM_OP_H
+#endif  // TXTVM_OP_H_

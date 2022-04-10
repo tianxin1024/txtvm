@@ -1,5 +1,5 @@
-#ifndef TVM_EXPR_H_
-#define TVM_EXPR_H_
+#ifndef TXTVM_EXPR_H_
+#define TXTVM_EXPR_H_
 
 #include <type_traits>
 #include "./base.h"
@@ -120,4 +120,4 @@ namespace txtvm {
 }; // namespace txtvm
 
 
-#endif // TVM_EXPR_H_
+#endif // TXTVM_EXPR_H_

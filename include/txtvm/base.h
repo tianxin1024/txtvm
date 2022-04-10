@@ -1,5 +1,5 @@
-#ifndef TXTVM_BASE_H
-#define TXTVM_BASE_H
+#ifndef TXTVM_BASE_H_
+#define TXTVM_BASE_H_
 
 #include <dmlc/logging.h>
 #include <dmlc/registry.h>
@@ -115,6 +115,7 @@ namespace txtvm {
     protected:
         template<typename T, typename>
         friend class Array;
+        friend class APIVariantValue;
         NodeRef() = default;
         explicit NodeRef(std::shared_ptr<Node> node) : node_(node) {}
         
@@ -126,7 +127,7 @@ namespace txtvm {
     using NodeFactory = std::function<std::shared_ptr<Node> ()>;
 
     /*!
-     * \brief Registry entry for DataIterator factory functions.
+     * \brief Registry entry for NodeFactory
      */
     struct NodeFactoryReg 
         : public dmlc::FunctionRegEntryBase<NodeFactoryReg, NodeFactory> {
@@ -164,4 +165,4 @@ namespace txtvm {
 } // namespace txtvm
 
 
-#endif // TXTVM_BASE_H
+#endif // TXTVM_BASE_H_
