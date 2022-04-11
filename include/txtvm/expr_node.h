@@ -78,6 +78,9 @@ namespace txtvm {
             node_type_ = kUnaryOpNode;
             dtype_ = this->src.dtype();
         }
+        ~UnaryOpNode() {
+            this->Destroy();
+        }
         const char* type_key() const override {
             return "kUnaryOpNode";
         }
@@ -109,6 +112,9 @@ namespace txtvm {
                 : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {
             node_type_ = kBinaryOpNode;
             dtype_ = this->lhs.dtype();
+        }
+        ~BinaryOpNode() {
+            this->Destroy();
         }
         const char* type_key() const override {
             return "BinaryOpNode";

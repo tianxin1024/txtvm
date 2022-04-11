@@ -48,7 +48,7 @@ class NodeBase(object):
         check_call(_LIB.TXTVMNodeGetAttr(
             self.handle, c_str(name),
             ctypes.byref(ret_val), ctypes.byref(ret_typeid)))
-        return RET_SWITCH[ret_typeid.value](ret_val)
+        ret = RET_SWITCH[ret_typeid.value](ret_val)
 
 def _type_key(handle):
     ret_val = ArgVariant()
@@ -100,7 +100,7 @@ def _make_function(handle, name):
     ret_type = ctypes.c_char_p()
 
     check_call(_LIB.TXTVMGetFunctionInfo(
-        handle, ctypes.buref(real_name), ctypes.byref(desc),
+        handle, ctypes.byref(real_name), ctypes.byref(desc),
         ctypes.byref(num_args),
         ctypes.byref(arg_names),
         ctypes.byref(arg_types),
@@ -129,7 +129,7 @@ def _make_function(handle, name):
             _push_arg(arg)
         ret_val = ArgVariant()
         ret_typeid = ctypes.c_int()
-        check_call(_LIB.TVMFunctionCall(
+        check_call(_LIB.TXTVMFunctionCall(
             handle, ctypes.byref(ret_val), ctypes.byref(ret_typeid)))
         return RET_SWITCH[ret_typeid.value](ret_val)
 
@@ -161,13 +161,13 @@ def _init_function_module(root_namespace):
     for i in range(size.value):
         op_names.append(py_str(plist[i]))
 
-    module_obj = sys.module["%s.function" % root_namespace]
-    module_internal = sys.modules["%s._function_internal" % root_namespace]
+    module_obj = sys.modules["%s.function" % root_namespace]
     for name in op_names:
         hdl = FunctionHandle()
         check_call(_LIB.TXTVMGetFunctionHandle(c_str(name), ctypes.byref(hdl)))
         function = _make_function(hdl, name)
         if function.__name__.startswith('_'):
+            module_internal = sys.modules["%s._function_internal" % root_namespace]
             setattr(module_internal, function.__name__, function)
         else:
             setattr(module_obj, function.__name__, function)

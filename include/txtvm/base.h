@@ -93,6 +93,15 @@ namespace txtvm {
     protected:
         // node ref can see this
         friend class NodeRef;
+        /*!
+        * \brief optional: safe destruction function
+        *  Can be called in destructor of composite types.
+        *  This can be used to avoid stack overflow when
+        *  recursive destruction long graph(1M nodes),
+        *
+        *  It is totally OK to not call this in destructor.
+        */
+        void Destroy();
         /* ! \brief the node type enum */
         NodeType node_type_{kOtherNodes};
 
@@ -116,6 +125,7 @@ namespace txtvm {
         template<typename T, typename>
         friend class Array;
         friend class APIVariantValue;
+        friend class Node;
         NodeRef() = default;
         explicit NodeRef(std::shared_ptr<Node> node) : node_(node) {}
         

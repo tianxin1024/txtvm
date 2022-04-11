@@ -77,6 +77,46 @@ int TXTVMListFunctionNames(int *out_size,
     API_END();
 }
 
+int TXTVMGetFunctionHandle(const char* fname,
+                            FunctionHandle* out) {
+    API_BEGIN();
+    const APIFunctionReg* reg = dmlc::Registry<APIFunctionReg>::Find(fname);
+    CHECK(reg != nullptr) << "cannot find function " << fname;
+    *out = (FunctionHandle)reg;
+    API_END();
+}
+
+int TXTVMGetFunctionInfo(FunctionHandle handle,
+                         const char **real_name,
+                         const char **description,
+                         int *num_doc_args,
+                         const char ***arg_names,
+                         const char ***arg_type_infos,
+                         const char ***arg_descriptions,
+                         const char **return_type) {
+    const auto *op = static_cast<const APIFunctionReg *>(handle);
+    TXTVMAPIThreadLocalEntry *ret = TXTVMAPIThreadLocalStore::Get();
+
+    API_BEGIN();
+    *real_name = op->name.c_str();
+    *description = op->description.c_str();
+    *num_doc_args = static_cast<int>(op->arguments.size());
+    if (return_type) *return_type = nullptr;
+    ret->ret_vec_charp.clear();
+    for (size_t i = 0; i < op->arguments.size(); ++i) {
+        ret->ret_vec_charp.push_back(op->arguments[i].name.c_str());
+    }
+    for (size_t i = 0; i < op->arguments.size(); ++i) {
+        ret->ret_vec_charp.push_back(op->arguments[i].type_info_str.c_str());
+    }
+    for (size_t i = 0; i < op->arguments.size(); ++i) {
+        ret->ret_vec_charp.push_back(op->arguments[i].description.c_str());
+    }
+    *arg_names = dmlc::BeginPtr(ret->ret_vec_charp);
+    *arg_type_infos = dmlc::BeginPtr(ret->ret_vec_charp) + op->arguments.size();
+    *arg_descriptions = dmlc::BeginPtr(ret->ret_vec_charp) + (op->arguments.size() + 2);
+    API_END();
+}
 
 int TXTVMPushStack(ArgVariant arg, int type_id) {
     TXTVMAPIThreadLocalEntry *ret = TXTVMAPIThreadLocalStore::Get();

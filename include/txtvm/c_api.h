@@ -62,7 +62,7 @@ TXTVM_DLL const char *TXTVMGetLastError(void);
  * \param out_array The array of function names.
  */
 TXTVM_DLL int TXTVMListFunctionNames(int *out_size,
-                                    const char** out_array);
+                                    const char*** out_array);
 
 /*!
  * \brief get function handle by name
