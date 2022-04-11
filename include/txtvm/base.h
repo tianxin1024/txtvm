@@ -18,9 +18,9 @@ namespace txtvm {
 
     /* ! \brief list of all supported data types */
     enum DataType {
-        kUnknown,
-        kInt32,
-        kFloat32
+        kUnknown = 0,
+        kInt32 = 1,
+        kFloat32 = 2
     };
 
 

@@ -11,7 +11,7 @@ namespace txtvm {
     using ArgStack = const std::vector<APIVariantValue>;
     using RetValue = APIVariantValue;
 
-    TXTVM_REGISTER_API(Var)
+    TXTVM_REGISTER_API(_Var)
         .set_body([](const ArgStack& args, RetValue *ret) {
                 *ret = Var(args.at(0), static_cast<DataType>(static_cast<int>(args.at(1))));
             })

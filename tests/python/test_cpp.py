@@ -1,8 +1,8 @@
 from txtvm import cpp as txtvm
 
 def test_basic():
-    a = txtvm.Var('a', 0);
-    b = txtvm.Var('b', 0);
+    a = txtvm.Var('a');
+    b = txtvm.Var('b');
     z = txtvm.Var(a, b);
     assert txtvm.format_str(z) == 'max(%s, %s)' % (a.name, b.name);
 

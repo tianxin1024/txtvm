@@ -22,6 +22,7 @@ namespace txtvm {
         }
         void VisitAttrs(AttrVisitor* visitor) override {
             visitor->Visit("name", &name);
+            visitor->Visit("dtype", &dtype_);
         }
     }; // class end of VarNode
 
