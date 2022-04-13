@@ -33,7 +33,7 @@ def _type_key(handle):
         ctypes.byref(ret_val), ctypes.byref(ret_typeid)))
     return py_str(ret_val.v_str)
 
-NODE_TYEP = {
+NODE_TYPE = {
 }
 
 RET_SWITCH = {

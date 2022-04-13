@@ -2,6 +2,7 @@
 #define TXTVM_TENSOR_H_
 
 #include <string>
+#include <vector>
 #include <type_traits>
 #include "./expr.h"
 #include "./array.h"
@@ -44,17 +45,17 @@ namespace txtvm {
     using FCompute = std::function<Expr (const Array<Var>& i)>;
 
     // comverters from other functions into fcompute
-    inline FCompute GetFCompute(std::function<Expr (Var x)> f) {
-        return [f](const Array<Var>& i) { return f(i[0]); };
+    inline FCompute GetFCompute(std::function<Expr(Var x)> f) {
+        return [f] (const Array<Var>& i) { return f(i[0]); };
     }
-    inline FCompute GetFCompute(std::function<Expr (Var, Var)> f) {
-        return [f](const Array<Var>& i) { return f(i[0], i[1]); };
+    inline FCompute GetFCompute(std::function<Expr(Var, Var)> f) {
+        return [f] (const Array<Var>& i) { return f(i[0], i[1]); };
     }
-    inline FCompute GetFCompute(std::function<Expr (Var, Var, Var)> f) {
-        return [f](const Array<Var>& i) { return f(i[0], i[1], i[2]); };
+    inline FCompute GetFCompute(std::function<Expr(Var, Var, Var)> f) {
+        return [f] (const Array<Var>& i) { return f(i[0], i[1], i[2]); };
     }
-    inline FCompute GetFCompute(std::function<Expr (Var, Var, Var, Var)> f) {
-        return [f](const Array<Var>& i) { return f(i[0], i[1], i[2], i[3]); };
+    inline FCompute GetFCompute(std::function<Expr(Var, Var, Var, Var)> f) {
+        return [f] (const Array<Var>& i) { return f(i[0], i[1], i[2], i[3]); };
     }
 
     /*!
@@ -134,6 +135,10 @@ namespace txtvm {
         * \return the result expression representing tensor read.
         */
         Expr operator()(Array<Expr> indices) const;
+        /*! \return list of input tensors to this tensor */
+        std::vector<Tensor> InputTensors() const;
+        /*! \return whether the tensor stores a result of reduction */
+        bool IsRTensor() const;
         // print function
         friend std::ostream& operator<<(std::ostream &os, const Tensor& t) {
             os << "Tensor(shape=" <<  t.shape()

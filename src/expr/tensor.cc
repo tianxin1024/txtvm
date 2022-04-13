@@ -1,5 +1,6 @@
 #include "txtvm/tensor.h"
 #include "txtvm/expr_node.h"
+#include "txtvm/expr_util.h"
 #include <memory>
 
 namespace txtvm {
@@ -36,6 +37,24 @@ namespace txtvm {
         node->tensor = *this;
         node->indices = std::move(indices);
         return Expr(std::move(node));
+    }
+
+    std::vector<Tensor> Tensor::InputTensors() const {
+        const TensorNode* n = static_cast<const TensorNode*>(node_.get());
+        std::vector<Tensor> inputs;
+        if (n->source.is_null()) return inputs;
+        Visit(n->source, [&inputs](const Expr& e) {
+            if (e.node_type() == kTensorReadNode) {
+                inputs.push_back(e.Get<TensorReadNode>()->tensor);
+            }
+        });
+        return inputs;
+    }
+
+    bool Tensor::IsRTensor() const {
+        const TensorNode* n = static_cast<const TensorNode*>(node_.get());
+        if (n->source.is_null()) return false;
+        return n->source.node_type() == kReduceNode;
     }
 
     TXTVM_REGISTER_NODE_TYPE(TensorNode);

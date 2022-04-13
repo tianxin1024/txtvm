@@ -11,7 +11,7 @@ namespace txtvm {
     * \param src The source expression
     * \return the simplified expression.
     */
-    Expr Simplify(const Expr& src) {
+    inline Expr Simplify(Expr src) {
         return src;
     }
 
@@ -33,6 +33,18 @@ namespace txtvm {
             case kUnaryOpNode: {
                 const auto* n = expr.Get<UnaryOpNode>();
                 Visit(n->src, fvisit);
+                break;
+            }
+            case kReduceNode: {
+                const auto* n = expr.Get<ReduceNode>();
+                Visit(n->src, fvisit);
+                break;
+            }
+            case kTensorReadNode: {
+                const auto* n = expr.Get<TensorReadNode>();
+                for (size_t i = 0; i < n->indices.size(); ++i) {
+                    Visit(n->indices[i], fvisit);
+                }
                 break;
             }
             default: break;
