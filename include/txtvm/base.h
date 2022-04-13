@@ -37,7 +37,7 @@ namespace txtvm {
         kFloatNode,
         kUnaryOpNode,
         kBinaryOpNode,
-        kReduceOpNode,
+        kReduceNode,
         kTensorReadNode,
         kOtherNodes
     };
@@ -120,6 +120,20 @@ namespace txtvm {
         inline NodeType node_type() const;
         /*! \return wheyjer the expression is null */
         inline bool is_null() const;
+        /*!
+        * \brief Comparator
+        * \param other Another node ref.
+        * \return the compare result.
+        */
+        inline bool operator==(const NodeRef& other) const;
+        /*!
+        * \brief Comparator
+        * \param other Another node ref.
+        * \return the compare result.
+        */
+        inline bool operator!=(const NodeRef& other) const;
+        /*! \return the hash function for NodeRef */
+        inline size_t hash() const;
 
     protected:
         template<typename T, typename>
@@ -172,7 +186,27 @@ namespace txtvm {
         return node_.get() == nullptr;
     }
 
+    inline bool NodeRef::operator==(const NodeRef& other) const {
+        return node_.get() == other.node_.get();
+    }
+
+    inline bool NodeRef::operator!=(const NodeRef& other) const {
+        return node_.get() != other.node_.get();
+    }
+
+    inline size_t NodeRef::hash() const {
+        return std::hash<Node*>()(node_.get());
+    }
+
 } // namespace txtvm
 
+namespace std {
+    template<>
+    struct hash<::txtvm::NodeRef> {
+        std::size_t operator()(const ::txtvm::NodeRef& k) const {
+            return k.hash();
+        }
+    }; // struct end of hash<::txtvm::NodeRef>
+} // namespace std
 
 #endif // TXTVM_BASE_H_

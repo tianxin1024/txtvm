@@ -10,6 +10,10 @@ namespace txtvm {
 
     // using Domain = Array<Range>
 
+    class RDomain : public NodeRef {
+
+    };  // class end of RDomain
+
 }  // namespace txtvm
 
 #endif // TXTVM_DOMAIN_H_

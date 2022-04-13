@@ -42,6 +42,7 @@ namespace txtvm {
         }
         void VisitAttrs(AttrVisitor* visitor) override {
             visitor->Visit("value", &value);
+            visitor->Visit("dtype", &dtype_);
         }
     }; // class end of IntNode
 
@@ -60,6 +61,7 @@ namespace txtvm {
         }
         void VisitAttrs(AttrVisitor* visitor) override {
             visitor->Visit("value", &value);
+            visitor->Visit("dtype", &dtype_);
         }
     }; // class end of FloatNode
 
@@ -90,6 +92,7 @@ namespace txtvm {
         }
         void VisitAttrs(AttrVisitor* visitor) override {
             visitor->Visit("op", &op);
+            visitor->Visit("dtype", &dtype_);
         }
         void VisitNodeRefFields(FNodeRefVisit fvisit) override {
             fvisit("src", &src);
@@ -126,12 +129,52 @@ namespace txtvm {
         }
         void VisitAttrs(AttrVisitor* visitor) override {
             visitor->Visit("op", &op);
+            visitor->Visit("dtype", &dtype_);
         }
         void VisitNodeRefFields(FNodeRefVisit fvisit) override {
             fvisit("lhs", &lhs);
             fvisit("rhs", &rhs);
         }
     }; // class end of FloatNode
+
+
+    /*! \brief Binary mapping operator */
+    struct ReduceNode : public ExprNode {
+
+    public:
+        /*! \brief The operator */
+        const BinaryOp* op;
+        /*! \brief The source operand */
+        Expr src;
+        /*! \brief The reduction domain */
+        RDomain rdom;
+        /*! \brief constructor, do not use constructor */
+        ReduceNode() {
+            node_type_ = kReduceNode;
+        }
+        ReduceNode(const BinaryOp* op, Expr && src, RDomain && rdom) 
+                    : op(op), src(std::move(src)), rdom(std::move(rdom)) {
+            node_type_ = kReduceNode;
+            dtype_ = this->src.dtype();
+        }
+        ~ReduceNode() {
+            this->Destroy();
+        }
+        const char* type_key() const override {
+            return "ReduceNode";
+        }
+        void Verify() const override {
+            CHECK_EQ(dtype_, src.dtype());
+        }
+        void VisitAttrs(AttrVisitor* visitor) override {
+            visitor->Visit("op", &op);
+            visitor->Visit("dtype", &dtype_);
+        }
+        void VisitNodeRefFields(FNodeRefVisit fvisit) override {
+            fvisit("src", &src);
+            fvisit("rdom", &rdom);
+        }
+    }; // struct end of ReduceNode
 
 
 } // namespace txtvm

@@ -15,11 +15,12 @@ namespace txtvm {
         return Expr(std::move(nptr));
     }
 
-// #define DEFINE_SINGLETON_GET(TypeName)           \
-//     TypeName* TypeName::Get() {                  \
-//         static TypeName inst;                    \
-//         return &inst;                            \
-//     }
+    Expr BinaryOp::Reduce(Expr src, RDomain rdom) const {
+        auto nptr = std::make_shared<ReduceNode>(
+                this, std::move(src), std::move(rdom));
+        nptr->Verify();
+        return Expr(std::move(nptr));
+    }
 
     const BinaryOp* BinaryOp::Get(const char* name) {
         const auto* op = dmlc::Registry<BinaryOpReg>::Find(name);

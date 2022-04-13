@@ -120,4 +120,15 @@ namespace txtvm {
 }; // namespace txtvm
 
 
+namespace std {
+
+    template <>
+    struct hash<::txtvm::Expr> {
+        std::size_t operator()(const ::txtvm::NodeRef& k) const {
+            return k.hash();
+        }
+    }; // struct end of hash<::txtvm::Expr>
+
+} // namespace std
+
 #endif // TXTVM_EXPR_H_
