@@ -107,7 +107,7 @@ namespace txtvm {
     }
 
     template<typename T,
-            typename = typename std::enable_if<std::is_arithmetic<T>::value>::type >
+            typename std::enable_if<std::is_arithmetic<T>::value>::type >
     inline Expr constant(T value) {
         if (std::is_integral<T>::value) {
             return IntConstant(static_cast<int64_t>(value));

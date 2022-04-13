@@ -11,7 +11,9 @@ namespace txtvm {
     * \param src The source expression
     * \return the simplified expression.
     */
-    Expr Simplify(const Expr& src);
+    Expr Simplify(const Expr& src) {
+        return src;
+    }
 
     /*!
     * \brief visit the exression node in expr tree in post DFS order.
