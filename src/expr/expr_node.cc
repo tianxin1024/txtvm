@@ -40,5 +40,6 @@ namespace txtvm {
     TXTVM_REGISTER_NODE_TYPE(UnaryOpNode);
     TXTVM_REGISTER_NODE_TYPE(BinaryOpNode);
     TXTVM_REGISTER_NODE_TYPE(ReduceNode);
+    TXTVM_REGISTER_NODE_TYPE(TensorReadNode);
 
 } // namespace txtvm

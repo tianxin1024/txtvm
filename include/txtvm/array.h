@@ -18,7 +18,10 @@ namespace txtvm {
             return "ArrayNode";
         }
         void VisitAttrs(AttrVisitor* visitor) override {
-            LOG(FATAL) << "need to specially handle list";
+            LOG(FATAL) << "need to specially handle attrs";
+        }
+        void VisitNodeRefFields(FNodeRefVisit fvisit) override {
+            // Do nothing, specially handled
         }
     }; // class end of ArrayNode
 
