@@ -3,8 +3,6 @@ from txtvm import cpp as txtvm
 def test_basic():
     a = txtvm.Var('a')
     b = txtvm.Var('b')
-    import ipdb
-    ipdb.set_trace()
     c = a + b
 
     assert a == c.lhs

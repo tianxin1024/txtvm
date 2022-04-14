@@ -1,6 +1,7 @@
 #include "txtvm/expr.h"
 #include "txtvm/op.h"
 #include "txtvm/tensor.h"
+#include "txtvm/expr_util.h"
 #include "./c_api_registry.h"
 
 namespace dmlc {
@@ -101,6 +102,11 @@ namespace txtvm {
                         static_cast<std::string>(args.at(1)),
                         static_cast<DataType>(static_cast<int>(args.at(1))));
             });
+
+    TXTVM_REGISTER_API(simplify)
+        .set_body([](const ArgStack& args,  RetValue *ret) {
+            *ret = Simplify(args.at(0));
+          });
 
 
     // transformations
