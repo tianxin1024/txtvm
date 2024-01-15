@@ -29,7 +29,7 @@ lib/libtxtvm.so: $(ALL_DEP)
 	$(CXX) $(CPLAGS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAGS)
 
 lint:
-	python2 dmlc-core/scripts/lint.py txtvm cpp include src
+	python3 dmlc-core/scripts/lint.py txtvm cpp include src
 
 doc:
 	doxygen docs/Doxygen
