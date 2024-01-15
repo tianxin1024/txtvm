@@ -15,7 +15,8 @@ class Split(object):
         assert self.dim < len(domain)
         inner_domain = domain[:]
         dim_out_range = domain[self.dim]
-        dim_inner_begin = dim_out_range.begin + self.loop_index * self.factor
+        # dim_inner_begin = dim_out_range.begin + self.loop_index * self.factor
+        dim_inner_begin = self.loop_index * self.factor + dim_out_range.begin 
         inner_domain[self.dim] = _dom.Range(dim_inner_begin, dim_inner_begin + self.factor)
         return inner_domain
 
