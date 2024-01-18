@@ -116,8 +116,8 @@ class ReduceExpr(Expr):
     def children(self):
         return (self.src,)
 
-class TensorReadExpr(Expr):
-    """Tensor read expression, tensor[indices]"""
+class TensorRefExpr(Expr):
+    """Tensor reference expression, tensor[indices]"""
     def __init__(self, tensor, indices):
         self.tensor = tensor
         self.indices = indices

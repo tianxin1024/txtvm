@@ -92,7 +92,7 @@ namespace txtvm {
 
 
     Expr IntConstant(int64_t value);
-    Expr FloatConstant(int64_t value);
+    Expr FloatConstant(double value);
 
     /*! \brief base of expression node */
     class ExprNode : public Node {
@@ -107,7 +107,7 @@ namespace txtvm {
     }
 
     template<typename T,
-            typename = typename std::enable_if<std::is_arithmetic<T>::value>::type >
+            typename std::enable_if<std::is_arithmetic<T>::value>::type >
     inline Expr constant(T value) {
         if (std::is_integral<T>::value) {
             return IntConstant(static_cast<int64_t>(value));
@@ -119,5 +119,16 @@ namespace txtvm {
 
 }; // namespace txtvm
 
+
+namespace std {
+
+    template <>
+    struct hash<::txtvm::Expr> {
+        std::size_t operator()(const ::txtvm::NodeRef& k) const {
+            return k.hash();
+        }
+    }; // struct end of hash<::txtvm::Expr>
+
+} // namespace std
 
 #endif // TXTVM_EXPR_H_

@@ -42,6 +42,7 @@ namespace txtvm {
         }
         void VisitAttrs(AttrVisitor* visitor) override {
             visitor->Visit("value", &value);
+            visitor->Visit("dtype", &dtype_);
         }
     }; // class end of IntNode
 
@@ -60,6 +61,7 @@ namespace txtvm {
         }
         void VisitAttrs(AttrVisitor* visitor) override {
             visitor->Visit("value", &value);
+            visitor->Visit("dtype", &dtype_);
         }
     }; // class end of FloatNode
 
@@ -90,6 +92,7 @@ namespace txtvm {
         }
         void VisitAttrs(AttrVisitor* visitor) override {
             visitor->Visit("op", &op);
+            visitor->Visit("dtype", &dtype_);
         }
         void VisitNodeRefFields(FNodeRefVisit fvisit) override {
             fvisit("src", &src);
@@ -126,6 +129,7 @@ namespace txtvm {
         }
         void VisitAttrs(AttrVisitor* visitor) override {
             visitor->Visit("op", &op);
+            visitor->Visit("dtype", &dtype_);
         }
         void VisitNodeRefFields(FNodeRefVisit fvisit) override {
             fvisit("lhs", &lhs);
@@ -133,6 +137,83 @@ namespace txtvm {
         }
     }; // class end of FloatNode
 
+
+    /*! \brief ReduceNode mapping operator */
+    struct ReduceNode : public ExprNode {
+
+    public:
+        /*! \brief The operator */
+        const BinaryOp* op;
+        /*! \brief The source operand */
+        Expr src;
+        /*! \brief The reduction domain */
+        RDomain rdom;
+        /*! \brief constructor, do not use constructor */
+        ReduceNode() {
+            node_type_ = kReduceNode;
+        }
+        ReduceNode(const BinaryOp* op, Expr && src, RDomain && rdom) 
+                    : op(op), src(std::move(src)), rdom(std::move(rdom)) {
+            node_type_ = kReduceNode;
+            dtype_ = this->src.dtype();
+        }
+        ~ReduceNode() {
+            this->Destroy();
+        }
+        const char* type_key() const override {
+            return "ReduceNode";
+        }
+        void Verify() const override {
+            CHECK_EQ(dtype_, src.dtype());
+        }
+        void VisitAttrs(AttrVisitor* visitor) override {
+            visitor->Visit("op", &op);
+            visitor->Visit("dtype", &dtype_);
+        }
+        void VisitNodeRefFields(FNodeRefVisit fvisit) override {
+            fvisit("src", &src);
+            fvisit("rdom", &rdom);
+        }
+    }; // struct end of ReduceNode
+
+    /*! \brief Tensor read operator */
+    struct TensorReadNode : public ExprNode {
+    public:
+        /*! \brief The tensor to be read from */
+        Tensor tensor;
+        /*! \brief The indices of read */
+        Array<Expr> indices;
+        /*! \brief constructor, do not use constructor */
+        TensorReadNode() {
+            node_type_ = kTensorReadNode;
+        }
+        TensorReadNode(Tensor && tensor, Array<Expr> && indices)
+            : tensor(std::move(tensor)), indices(std::move(indices)) {
+            node_type_ = kReduceNode;
+            dtype_ = tensor.dtype();
+        }
+        ~TensorReadNode() {
+            this->Destroy();
+        }
+        const char* type_key() const override {
+            return "TensorReadNode";
+        }
+        void Verify() const override {
+            CHECK_EQ(dtype_, tensor.dtype());
+            for (size_t i = 0; i < indices.size(); ++i) {
+                CHECK_EQ(indices[i].dtype(), kInt32);
+            }
+        }
+
+        void VisitAttrs(AttrVisitor* visitor) override {
+            visitor->Visit("dtype", &dtype_);
+        }
+        void VisitNodeRefFields(FNodeRefVisit fvisit) override {
+            fvisit("tensor", &tensor);
+            fvisit("indices", &indices);
+        }
+
+    }; // struct end of TensorReadNode
 
 } // namespace txtvm
 

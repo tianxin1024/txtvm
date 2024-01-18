@@ -18,7 +18,10 @@ namespace txtvm {
             return "ArrayNode";
         }
         void VisitAttrs(AttrVisitor* visitor) override {
-            LOG(FATAL) << "need to specially handle list";
+            LOG(FATAL) << "need to specially handle attrs";
+        }
+        void VisitNodeRefFields(FNodeRefVisit fvisit) override {
+            // Do nothing, specially handled
         }
     }; // class end of ArrayNode
 
@@ -128,6 +131,19 @@ namespace txtvm {
         inline size_t size() const {
             if (node_.get() == nullptr) return 0;
             return static_cast<const ArrayNode*>(node_.get())->data.size();
+        }
+
+        friend std::ostream& operator<<(std::ostream &os, const Array<T>& r) {
+            for (size_t i = 0; i < r.size(); ++i) {
+                if (i == 0) {
+                    os << '[';
+                } else {
+                    os << ", ";
+                } 
+                os << r[i];
+            }
+            os << ']';
+            return os;
         }
 
     }; // class end of Array

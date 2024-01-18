@@ -20,7 +20,7 @@ if sys.version_info[0] == 3:
     py_str = lambda x : x.decode('utf-8')
 else:
     string_types = basestring,
-    numerice_types = (float, int, long, np.float32, np.int32)
+    numeric_types = (float, int, long, np.float32, np.int32)
     py_str = lambda x : x
 
 class TXTVMError(Exception):
