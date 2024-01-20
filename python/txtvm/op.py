@@ -7,7 +7,7 @@ def canonical_to_expr(c):
     elements = []
     # for k, v in sorted(c.items()):
     for k, v in sorted(c.items(), key=lambda item : item[1]):
-        if k == constant_canonical_key:
+        if k == constant_canonical_key and v != 0:
             elements.append(_expr.const(v))
         elif v == 0:
             continue
