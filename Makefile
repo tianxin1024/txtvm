@@ -11,12 +11,9 @@ SRC = $(wildcard src/*.cc src/*/*.cc)
 ALL_OBJ = $(patsubst src/%.cc, build/%.o, $(SRC))
 ALL_DEP = $(ALL_OBJ)
 
-$(info --------------)
 include tests/cpp/unittest.mk
 
 test: $(TEST)
-
-$(info $(GTEST_LIB))
 
 build/%.o: src/%.cc
 	@mkdir -p $(@D)

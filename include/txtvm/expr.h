@@ -26,9 +26,19 @@ public:
         *this = std::move(constant<T>(value));
     }
 
-    explicit Expr(std::shared_ptr<Node> nptr) : NodeRef(nptr) {}
+    explicit Expr(std::shared_ptr<Node> nptr) : NodeRef(std::move(nptr)) {
+        CHECK(node_.get() != nullptr);
+    }
 
     inline DataType dtype() const;
+    
+    friend std::ostream& operator<<(std::ostream &os, const Expr& e) {
+        e.Print(os);
+        return os;
+    }
+
+private:
+    void Print(std::ostream& os) const;
 };
 
 
@@ -39,7 +49,6 @@ public:
 
 Expr IntConstant(int64_t value);
 Expr FloatConstant(int64_t value);
-Expr operator+(Expr lhs, Expr rhs);
 
 class ExprNode : public Node {
 public:

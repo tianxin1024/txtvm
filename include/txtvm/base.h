@@ -47,7 +47,7 @@ using FNodeRefVisit = std::function<void(const char* key, NodeRef* ref)>;
 
 class Node {
 public:
-    virtual ~Node();
+    virtual ~Node() {}
     virtual const char* type_key() const = 0;
     virtual void Verify() const {}
     virtual void VisitAttrs(AttrVisitor* visitor) {}
@@ -55,8 +55,6 @@ public:
 
     template<typename TNode>
     inline bool is_type() const;
-
-    inline NodeType node_type() const;
 
 protected:
     friend class NodeRef;
@@ -67,11 +65,13 @@ class NodeRef {
 public:
     template<typename TNode>
     inline const TNode* Get() const;
+    inline NodeType node_type() const;
     inline bool is_null() const;
 
-protected:
     NodeRef() = default;
-    explicit NodeRef(std::shared_ptr<Node> node) : node_(node) {}
+    explicit NodeRef(std::shared_ptr<Node> node) : node_(std::move(node)) {}
+
+protected:
     std::shared_ptr<Node> node_;
 };
 
@@ -85,8 +85,8 @@ struct NodeFactoryReg : public dmlc::FunctionRegEntryBase<NodeFactoryReg, NodeFa
     DMLC_REGISTRY_REGISTER(::tvm::NodeFactoryReg, NodeFactoryReg, TypeName) \
     .set_body([]() { return std::make_shared<TypeName>(); })
 
-inline NodeType Node::node_type() const {
-    return node_type_;
+inline NodeType NodeRef::node_type() const {
+    return node_->node_type_;
 }
 
 template<typename TNode>
