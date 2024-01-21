@@ -1,6 +1,6 @@
 # txtvm
 
-hack for fun
+learning tvm
 
 Run the tests, set the basic
 ```
