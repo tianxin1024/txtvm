@@ -25,10 +25,10 @@ lib/libtvm.a: $(ALL_DEP)
 	ar crv $@ $(filter %.o, $?)
 
 lint:
-	python dmlc-core/scripts/lint.py tvm cpp include src
+	python dmlc-core/scripts/lint.py txtvm cpp include src
 
 clean:
 	$(RM) -rf build lib bin *~ */*~ */*/*~ */*/*/*~ */*.o */*/*.o */*/*/*.o */*.d */*/*.d */*/*/*.d
 
--include build/*.o
+-include build/*.d
 -include build/*/*.d

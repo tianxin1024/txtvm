@@ -1,11 +1,11 @@
 #include <txtvm/op.h>
-#include <txtvm/expr_util.h>
+#include <txtvm/expr_node.h>
 
 namespace tvm {
 
 Expr BinaryOp::operator()(Expr lhs, Expr rhs) const {
     auto nptr = std::make_shared<BinaryOpNode>(
-        this, std::move(lhs), std::move(rhs));
+            this, std::move(lhs), std::move(rhs));
     nptr->Verify();
     return Expr(std::move(nptr));
 }

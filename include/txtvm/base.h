@@ -81,7 +81,7 @@ struct NodeFactoryReg : public dmlc::FunctionRegEntryBase<NodeFactoryReg, NodeFa
 
 };
 
-#define TVM_REGISTER_NODE_TYEP(TypeName)                                    \
+#define TVM_REGISTER_NODE_TYPE(TypeName)                                    \
     DMLC_REGISTRY_REGISTER(::tvm::NodeFactoryReg, NodeFactoryReg, TypeName) \
     .set_body([]() { return std::make_shared<TypeName>(); })
 
