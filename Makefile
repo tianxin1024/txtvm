@@ -1,5 +1,5 @@
 export LDFLAGS = -pthread -lm
-export CFLAGS = -std=c++11 -Wall -O2 -Wno-unknown-pargmas -funroll-loops \
+export CFLAGS = -std=c++14 -Wall -O0 -g -Wno-unknown-pargmas -funroll-loops \
 	-Iinclude -Idmlc-core/include -fPIC
 
 # specify tensor path

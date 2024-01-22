@@ -3,13 +3,12 @@
 #include <txtvm/txtvm.h>
 
 TEST(Expr, Basic) {
-    printf("hello world\n");
-    // using namespace tvm;
-    // Var x("x");
-    // auto z = max(x + 1 + 2, 100);
-    // std::ostringstream os;
-    // os << z;
-    // CHECK(os.str() == "max(((x + 1) + 2), 100)");
+    using namespace tvm;
+    Var x("x");
+    auto z = max(x + 1 + 2, 100);
+    std::ostringstream os;
+    os << z;
+    CHECK(os.str() == "max(((x + 1) + 2), 100)");
 }
 
 int main (int argc, char ** argv) {
