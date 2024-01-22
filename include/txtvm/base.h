@@ -72,6 +72,7 @@ public:
 protected:
     template<typename T, typename>
     friend class Array;
+    friend class APIVariantValue;
     NodeRef() = default;
     explicit NodeRef(std::shared_ptr<Node> node) : node_(std::move(node)) {}
     std::shared_ptr<Node> node_;

@@ -17,22 +17,51 @@
 #define TVM_DLL TVM_EXTERN_C
 #endif
 
-typedef void* NodeCreatorHandle;
+typedef void* FunctionHandle;
 typedef void* NodeHandle;
 
-TVM_DLL int TVMNodeCreatorGet(const char* node_type, NodeCreatorHandle *handle);
+typedef union {
+    long v_long;
+    double v_double;
+    const char* v_str;
+    NodeHandle v_handle;
+} ArgVariant;
 
-TVM_DLL int TVMNodeCreate(NodeCreatorHandle handle,
-                          int num_child_ref,
-                          const char* child_ref_keys,
-                          NodeHandle* child_node_refs,
-                          int num_attrs,
-                          const char* attr_keys,
-                          const char* attr_vals,
-                          NodeHandle* handle);
+typedef enum {
+    kNull       = 0,
+    kLong       = 1,
+    kDouble     = 2,
+    kStr        = 3,
+    kNodeHandle = 4
+} ArgVariantID;
 
-TVM_DLL int TVMNodeGetAttr(const char* key, const char** value);
+TVM_DLL const char *TVMGetLastError(void);
 
-TVM_DLL int TVMNodeGetChildNodeRef(const char* key, NodeHandle* out);
+TVM_DLL int TVMListFunctionNames(int *out_size, const char*** out_array);
+
+TVM_DLL int TVMGetFunctionHandle(const char* name, FunctionHandle *handle);
+
+TVM_DLL int TVMGetFunctionInfo(FunctionHandle handle,
+                          const char **real_name,
+                          const char **description,
+                          int *num_doc_args,
+                          const char ***arg_names,
+                          const char ***arg_type_infos,
+                          const char ***arg_descriptions,
+                          const char **return_type);
+
+
+TVM_DLL int TVMPushStack(ArgVariant arg, int type_id);
+
+TVM_DLL int TVMFunctionCall(FunctionHandle handle, 
+                            ArgVariant* ret_val,
+                            int* ret_typeid);
+
+TVM_DLL int TVMNodeFree(NodeHandle handle);
+
+TVM_DLL int TVMNodeGetAttr(NodeHandle handle,
+                           const char* key,
+                           ArgVariant* out_value,
+                           int* out_typeid);
 
 #endif // TVM_C_API_H_

@@ -5,7 +5,7 @@ export CFLAGS = -std=c++14 -Wall -O0 -g -Wno-unknown-pargmas -funroll-loops \
 # specify tensor path
 .PHONY: clean all test
 
-all: lib/libtvm.a
+all: lib/libtvm.a lib/libtvm.so
 
 SRC = $(wildcard src/*.cc src/*/*.cc)
 ALL_OBJ = $(patsubst src/%.cc, build/%.o, $(SRC))
@@ -23,6 +23,10 @@ build/%.o: src/%.cc
 lib/libtvm.a: $(ALL_DEP)
 	@mkdir -p $(@D)
 	ar crv $@ $(filter %.o, $?)
+
+lib/libtvm.so: $(ALL_DEP)
+	@mkdir -p $(@D)
+	$(CXX) $(CFLAGS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAGS)
 
 lint:
 	python dmlc-core/scripts/lint.py txtvm cpp include src

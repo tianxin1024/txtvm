@@ -12,7 +12,6 @@ TEST(Tensor, Basic) {
         return A(i, k) * B(j, k);
     };
     auto C = Tensor({m, n}, x);
-
 }
 
 int main (int argc, char ** argv) {
