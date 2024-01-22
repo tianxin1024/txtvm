@@ -11,7 +11,7 @@ namespace tvm {
 using ArgStack = const std::vector<APIVariantValue>;
 using RetValue = APIVariantValue;
 
-TVM_REGISTER_API(Var)
+TVM_REGISTER_API(_Var)
 .set_body([](const ArgStack& args, RetValue *ret) {
         *ret = Var(args.at(0), static_cast<DataType>(static_cast<int>(args.at(1))));
         })
