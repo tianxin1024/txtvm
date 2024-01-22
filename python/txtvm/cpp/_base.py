@@ -48,7 +48,7 @@ NodeHandle = ctypes.c_void_p
 #-------------------------------
 # helper function definition
 #-------------------------------
-def check_all(ret):
+def check_call(ret):
     """Check the return value of C API call
 
     This function will raise exception when error occurs.

@@ -68,6 +68,10 @@ public:
         dtype_ = this->src.dtype();
     }
 
+    ~UnaryOpNode() {
+        this->Destory();
+    }
+
     const char* type_key() const override {
         return "UnaryOpNode";
     }
@@ -95,6 +99,11 @@ public:
         node_type_ = kBinaryOpNode;
         dtype_ = this->lhs.dtype();
     }
+
+    ~BinaryOpNode() {
+        this->Destory();
+    }
+
     const char* type_key() const override {
         return "binaryOpNode";
     }

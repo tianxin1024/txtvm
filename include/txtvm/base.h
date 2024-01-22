@@ -58,6 +58,7 @@ public:
 
 protected:
     friend class NodeRef;
+    void Destory();
     NodeType node_type_{kOtherNodes};
 };
 
@@ -73,6 +74,7 @@ protected:
     template<typename T, typename>
     friend class Array;
     friend class APIVariantValue;
+    friend class Node;
     NodeRef() = default;
     explicit NodeRef(std::shared_ptr<Node> node) : node_(std::move(node)) {}
     std::shared_ptr<Node> node_;
