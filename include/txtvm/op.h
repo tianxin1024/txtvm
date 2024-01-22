@@ -17,7 +17,7 @@ class UnaryOp {
 public:
     virtual const char* FunctionName() const = 0;
 
-    Expr operator()(Expr lhs, Expr rhs) const;
+    Expr operator()(Expr src) const;
 };
 
 class AddOp : public BinaryOp {
@@ -86,6 +86,10 @@ DEFINE_OP_OVERLOAD(/, AddOp);
 
 DEFINE_BINARY_OP_FUNCTION(max, MaxOp);
 DEFINE_BINARY_OP_FUNCTION(min, MaxOp);
+
+inline Expr operator-(Expr src) {
+    return src * (-1);
+}
 
 }; // end of namespace tvm
 

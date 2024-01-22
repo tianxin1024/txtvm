@@ -68,10 +68,12 @@ public:
     inline NodeType node_type() const;
     inline bool is_null() const;
 
-    NodeRef() = default;
-    explicit NodeRef(std::shared_ptr<Node> node) : node_(std::move(node)) {}
 
 protected:
+    template<typename T, typename>
+    friend class Array;
+    NodeRef() = default;
+    explicit NodeRef(std::shared_ptr<Node> node) : node_(std::move(node)) {}
     std::shared_ptr<Node> node_;
 };
 

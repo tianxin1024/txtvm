@@ -15,4 +15,5 @@ tests/cpp/expr: tests/cpp/expr_test.cc dmlc-core/include/dmlc/logging.h \
  dmlc-core/include/dmlc/./././common.h \
  dmlc-core/include/dmlc/././strtonum.h \
  dmlc-core/include/dmlc/./type_traits.h include/txtvm/expr.h \
- include/txtvm/op.h include/txtvm/tensor.h
+ include/txtvm/op.h include/txtvm/tensor.h include/txtvm/array.h \
+ include/txtvm/domain.h
