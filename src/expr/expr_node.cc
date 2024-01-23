@@ -38,5 +38,6 @@ TVM_REGISTER_NODE_TYPE(FloatNode);
 TVM_REGISTER_NODE_TYPE(UnaryOpNode);
 TVM_REGISTER_NODE_TYPE(BinaryOpNode);
 TVM_REGISTER_NODE_TYPE(ReduceNode);
+TVM_REGISTER_NODE_TYPE(TensorReadNode);
 
 } // end of namespace tvm

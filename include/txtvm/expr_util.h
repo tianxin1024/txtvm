@@ -6,7 +6,7 @@
 
 namespace tvm {
 
-Expr Simplify(const Expr src) {
+inline Expr Simplify(Expr src) {
     return src;
 }
 

@@ -31,23 +31,78 @@ public:
     }
 };
 
+using FCompute = std::function<Expr (const Array<Var>& i)>;
+
+inline FCompute GetFCompute(std::function<Expr (Var x)> f) {
+    return [f](const Array<Var>& i) { return f(i[0]); };
+}
+inline FCompute GetFCompute(std::function<Expr (Var, Var)> f) {
+    return [f](const Array<Var>& i) { return f(i[0], i[1]); };
+}
+inline FCompute GetFCompute(std::function<Expr (Var, Var, Var)> f) {
+    return [f](const Array<Var>& i) { return f(i[0], i[1], i[2]); };
+}
+inline FCompute GetFCompute(std::function<Expr (Var, Var, Var, Var)> f) {
+    return [f](const Array<Var>& i) { return f(i[0], i[1], i[2], i[3]); };
+}
+
+
 class Tensor : public NodeRef {
 public:
-    Tensor(Array<Expr> shape);
+    Tensor() {}
 
-    Tensor(Array<Expr> shape, std::function<Expr (Var, Var, Var)> f3) {
+    explicit Tensor(Array<Expr> shape, 
+                    std::string name = "tensor",
+                    DataType dtype = kFloat32);
+
+    Tensor(Array<Expr> shape, FCompute fcompute, std::string name = "tensor");
+    Tensor(Array<Expr> shape, std::function<Expr(Var)> f, std::string name = "tensor")
+        : Tensor(shape, GetFCompute(f), name) {}
+    Tensor(Array<Expr> shape, std::function<Expr(Var, Var)> f, std::string name = "tensor")
+        : Tensor(shape, GetFCompute(f), name) {}
+    Tensor(Array<Expr> shape, std::function<Expr(Var, Var, Var)> f, std::string name = "tensor")
+        : Tensor(shape, GetFCompute(f), name) {}
+    Tensor(Array<Expr> shape, std::function<Expr(Var, Var, Var, Var)> f, std::string name = "tensor")
+        : Tensor(shape, GetFCompute(f), name) {}
+
+    inline size_t ndim() const {
+        return static_cast<const TensorNode*>(node_.get())->shape.size();
     }
 
-    inline size_t ndim() const;
+    inline const std::string& name() const {
+        return static_cast<const TensorNode*>(node_.get())->name;
+    }
+
+    inline DataType dtype() const {
+        return static_cast<const TensorNode*>(node_.get())->dtype;
+    }
+
+    inline const Expr& source() const {
+        return static_cast<const TensorNode*>(node_.get())->source;
+    }
+
+    inline const Array<Var>& dim_index() const {
+        return static_cast<const TensorNode*>(node_.get())->dim_index;
+    }
+
+    inline const Array<Expr>& shape() const {
+        return static_cast<const TensorNode*>(node_.get())->shape;
+    }
 
     template<typename... Args>
     inline Expr operator()(Args&& ...args) const {
         Array<Expr> indices{std::forward<Args>(args)...};
-        CHECK_EQ(ndim(), indices.size())
-            << "Tensor dimension mismatch in read";
-        return Expr();
+        return operator()(indices);
     }
 
+    Expr operator()(Array<Expr> indices) const;
+
+    friend std::ostream& operator<<(std::ostream &os, const Tensor& t) {
+        os << "Tensor(shape=" << t.shape()
+            << ", source=" << t.source()
+            << ", name=" << t.name() << ')';
+        return os;
+    }
 };
 
 }; // end of namespace tvm

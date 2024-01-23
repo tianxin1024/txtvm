@@ -157,6 +157,39 @@ public:
     }
 };
 
+struct TensorReadNode : public ExprNode {
+public:
+    Tensor tensor;
+    Array<Expr> indices;
+    TensorReadNode() {
+        node_type_ = kTensorReadNode;
+    }
+    TensorReadNode(Tensor && tensor, Array<Expr> && indices)
+            : tensor(std::move(tensor)), indices(std::move(indices)) {
+        node_type_ = kReduceNode;
+        dtype_ = tensor.dtype();
+    }
+    ~TensorReadNode() {
+        this->Destory();
+    }
+    const char* type_key() const override {
+        return "TensorReadNode";
+    }
+    void Verify() const override {
+        CHECK_EQ(dtype_, tensor.dtype());
+        for (size_t i = 0; i < indices.size(); ++i) {
+            CHECK_EQ(indices[i].dtype(), kInt32);
+        }
+    }
+    void VisitAttrs(AttrVisitor* visitor) override {
+        visitor->Visit("dtype", &dtype_);
+    }
+    void VisitNodeRefFields(FNodeRefVisit fvisit) override {
+        fvisit("tensor", &tensor);
+        fvisit("indices", &indices);
+    }
+};
+
 }; // end of namespace tvm
 
 #endif // TVM_EXPR_NODE_H_
