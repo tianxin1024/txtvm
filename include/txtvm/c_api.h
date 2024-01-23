@@ -64,4 +64,8 @@ TVM_DLL int TVMNodeGetAttr(NodeHandle handle,
                            ArgVariant* out_value,
                            int* out_typeid);
 
+TVM_DLL int TVMNodeListAttrNames(NodeHandle handle,
+                                 int *out_size,
+                                 const char*** out_array);
+
 #endif // TVM_C_API_H_

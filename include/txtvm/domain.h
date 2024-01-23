@@ -2,10 +2,13 @@
 #define TVM_DOMAIN_H_
 
 #include <memory>
+#include "base.h"
+#include "array.h"
+#include "expr.h"
 
 namespace tvm {
 
-class RDom {
+class RDomain : public NodeRef {
 
 };
 

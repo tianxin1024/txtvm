@@ -37,6 +37,7 @@ public:
     }
     void VisitAttrs(AttrVisitor* visitor) override {
         visitor->Visit("value", &value);
+        visitor->Visit("dtype", &dtype_);
     }
 };
 
@@ -52,6 +53,7 @@ public:
     }
     void VisitAttrs(AttrVisitor* visitor) override {
         visitor->Visit("value", &value);
+        visitor->Visit("dtype", &dtype_);
     }
 };
 
@@ -81,6 +83,7 @@ public:
     }
     void VisitAttrs(AttrVisitor* visitor) override {
         visitor->Visit("op", &op);
+        visitor->Visit("dtype", &dtype_);
     }
     void VisitNodeRefFields(FNodeRefVisit fvisit) override {
         fvisit("src", &src);
@@ -114,10 +117,43 @@ public:
     }
     void VisitAttrs(AttrVisitor* visitor) override {
         visitor->Visit("op", &op);
+        visitor->Visit("dtype", &dtype_);
     }
     void VisitNodeRefFields(FNodeRefVisit fvisit) override {
         fvisit("lhs", &lhs);
         fvisit("rhs", &rhs);
+    }
+};
+
+struct ReduceNode : public ExprNode {
+public:
+    const BinaryOp* op;
+    Expr src;
+    RDomain rdom;
+    ReduceNode() {
+        node_type_ = kReduceNode;
+    }
+    ReduceNode(const BinaryOp* op, Expr && src, RDomain && rdom) 
+            : op(op), src(std::move(src)), rdom(std::move(rdom)) {
+        node_type_ = kReduceNode;
+        dtype_ = this->src.dtype();
+    }
+    ~ReduceNode() {
+        this->Destory();
+    }
+    const char* type_key() const override {
+        return "ReduceNode";
+    }
+    void Verify() const override {
+        CHECK_EQ(dtype_, src.dtype());
+    }
+    void VisitAttrs(AttrVisitor* visitor) override {
+        visitor->Visit("op", &op);
+        visitor->Visit("dtype", &dtype_);
+    }
+    void VisitNodeRefFields(FNodeRefVisit fvisit) override {
+        fvisit("src", &src);
+        fvisit("rdom", &rdom);
     }
 };
 

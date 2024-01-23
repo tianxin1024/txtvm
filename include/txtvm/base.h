@@ -69,6 +69,9 @@ public:
     inline NodeType node_type() const;
     inline bool is_null() const;
 
+    inline bool operator==(const NodeRef& other) const;
+    inline bool operator!=(const NodeRef& other) const;
+    inline size_t hash() const;
 
 protected:
     template<typename T, typename>
@@ -113,7 +116,29 @@ inline bool NodeRef::is_null() const {
     return node_.get() == nullptr;
 }
 
+inline bool NodeRef::operator==(const NodeRef& other) const {
+    return node_.get() == nullptr;
+}
+
+inline bool NodeRef::operator!=(const NodeRef& other) const {
+    return node_.get() != other.node_.get();
+}
+
+inline size_t NodeRef::hash() const {
+    return std::hash<Node*>()(node_.get());
+}
+
 } // end of namespace tvm
+
+namespace std {
+template <>
+struct hash<::tvm::NodeRef> {
+    std::size_t operator()(const ::tvm::NodeRef& k) const {
+        return k.hash();
+    }
+};
+
+} // end of namespace std
 
 
 #endif // TVM_BASE_H_

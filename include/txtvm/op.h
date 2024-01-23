@@ -3,6 +3,7 @@
 
 #include <string>
 #include "expr.h"
+#include "domain.h"
 
 namespace tvm {
 
@@ -12,6 +13,8 @@ public:
     virtual const char* FunctionName() const = 0;
 
     Expr operator()(Expr lhs, Expr rhs) const;
+
+    Expr Reduce(Expr src, RDomain rdom) const;
 
     static const BinaryOp* Get(const char* name);
 };
@@ -80,6 +83,13 @@ public:
         return (*op)(lhs, rhs);                               \
     }
 
+#define DEFINE_REDUCE_FUNCTION(FuncName, OpName)              \
+    inline Expr FuncName(Expr src, RDomain rdom) {            \
+        static const BinaryOp* op = BinaryOp::Get(#OpName);   \
+        return op->Reduce(src, rdom);                         \
+    }
+
+
 DEFINE_BINARY_OP_OVERLOAD(+);
 DEFINE_BINARY_OP_OVERLOAD(-);
 DEFINE_BINARY_OP_OVERLOAD(*);
@@ -87,6 +97,10 @@ DEFINE_BINARY_OP_OVERLOAD(/);
 
 DEFINE_BINARY_OP_FUNCTION(max);
 DEFINE_BINARY_OP_FUNCTION(min);
+
+DEFINE_REDUCE_FUNCTION(max, max);
+DEFINE_REDUCE_FUNCTION(min, min);
+DEFINE_REDUCE_FUNCTION(sum, +);
 
 inline Expr operator-(Expr src) {
     return src * (-1);
