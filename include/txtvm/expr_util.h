@@ -6,7 +6,9 @@
 
 namespace tvm {
 
-Expr Simplify(const Expr& src);
+Expr Simplify(const Expr src) {
+    return src;
+}
 
 template<typename FVisit>
 inline void Visit(const Expr& expr, FVisit fvisit) {

@@ -81,6 +81,19 @@ public:
         return static_cast<const ArrayNode*>(node_.get())->data.size();
     }
 
+    friend std::ostream& operator<<(std::ostream &os, const Array<T>& r) {
+        for (size_t i = 0; i < r.size(); ++i) {
+            if (i == 0) {
+                os << '[';
+            } else {
+                os << ", ";
+            }
+            os << r[i];
+        }
+        os << ']';
+        return os;
+    }
+
 };
     
 
