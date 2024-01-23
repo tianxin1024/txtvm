@@ -1,5 +1,6 @@
-#include <txtvm/expr.h>
-#include <txtvm/op.h>
+#include "txtvm/expr.h"
+#include "txtvm/op.h"
+#include "txtvm/tensor.h"
 #include "c_api_registry.h"
 
 namespace dmlc {
@@ -42,11 +43,46 @@ TVM_REGISTER_API(_binary_op)
 .add_argument("rhs", "Expr", "right operand");
 
 
+TVM_REGISTER_API(_raw_ptr)
+.set_body([](const ArgStack& args, RetValue *ret) {
+        CHECK(args.at(0).type_id == kNodeHandle);
+        *ret = reinterpret_cast<int64_t>(args.at(0).sptr.get());
+})
+.add_argument("src", "NodeBase", "the node base");
+
+
+TVM_REGISTER_API(_Range)
+.set_body([](const ArgStack& args, RetValue *ret) {
+    *ret = Range(args.at(0), args.at(1));
+})
+.add_argument("begin", "Expr", "beginning of the range.")
+.add_argument("end", "Expr", "end of the range");
+
+
+TVM_REGISTER_API(_TensorInput)
+.set_body([](const ArgStack& args, RetValue *ret) {
+    *ret = Tensor(
+        static_cast<Array<Expr>>(args.at(0)),
+        static_cast<std::string>(args.at(1)),
+        static_cast<DataType>(static_cast<int>(args.at(1))));
+});
+
+
 TVM_REGISTER_API(format_str)
 .set_body([](const ArgStack& args, RetValue *ret) {
-        std::ostringstream os;
-        os << Expr(args.at(0));
-        *ret = os.str();
+    CHECK(args.at(0).type_id == kNodeHandle);
+    std::ostringstream os;
+    auto& sptr = args.at(0).sptr;
+    if (sptr->is_type<TensorNode>()) {
+        os << args.at(0).operator Tensor();
+    } else if (sptr->is_type<RDomainNode>()) {
+        os << args.at(0).operator RDomain();
+    } else if (sptr->is_type<RangeNode>()) {
+        os << args.at(0).operator Range();
+    } else {
+        os << args.at(0).operator Expr();
+    }
+    *ret = os.str();
 })
 .add_argument("expr", "Expr", "expression to be printed");
 
