@@ -13,7 +13,7 @@ __all__ = ['TVMError']
 #-------------------------------
 # library loading
 #-------------------------------
-if sys.version_info[3] == 3:
+if sys.version_info[0] == 3:
     string_types = str,
     numeric_types = (float, int, np.float32, np.int32)
     py_str = lambda x: x.decode('utf-8')

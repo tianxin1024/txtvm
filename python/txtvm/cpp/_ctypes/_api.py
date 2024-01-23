@@ -145,7 +145,7 @@ def register_node(type_key):
         NODE_TYPE[type_key] = cls
     return register
 
-def __init_function_module(root_namespace):
+def _init_function_module(root_namespace):
     """List and add all the functions to current module."""
     plist = ctypes.POINTER(ctypes.c_char_p)()
     size = ctypes.c_uint()
