@@ -125,7 +125,7 @@ def _make_function(handle, name):
             _push_arg(arg)
         ret_val = ArgVariant()
         ret_typeid = ctypes.c_int()
-        check_call(_LIB.TVMFuncionCall(
+        check_call(_LIB.TVMFunctionCall(
             handle, ctypes.byref(ret_val), ctypes.byref(ret_typeid)))
         return RET_SWITCH[ret_typeid.value](ret_val)
 

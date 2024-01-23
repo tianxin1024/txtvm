@@ -278,3 +278,9 @@ gallery/how_to/work_with_microtvm/micro_tvmc.py
 # GDB history file
 .gdb_history
 .profile
+tests/cpp/array.d
+tests/cpp/tensor.d
+tests/cpp/expr_test
+tests/cpp/expr_test
+tests/cpp/expr.d
+tests/cpp/array_test
