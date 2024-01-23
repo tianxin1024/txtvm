@@ -33,17 +33,17 @@ public:
 
 using FCompute = std::function<Expr (const Array<Var>& i)>;
 
-inline FCompute GetFCompute(std::function<Expr (Var x)> f) {
-    return [f](const Array<Var>& i) { return f(i[0]); };
+inline FCompute GetFCompute(std::function<Expr(Var x)> f) {
+    return [f] (const Array<Var>& i) { return f(i[0]); };
 }
-inline FCompute GetFCompute(std::function<Expr (Var, Var)> f) {
-    return [f](const Array<Var>& i) { return f(i[0], i[1]); };
+inline FCompute GetFCompute(std::function<Expr(Var, Var)> f) {
+    return [f] (const Array<Var>& i) { return f(i[0], i[1]); };
 }
-inline FCompute GetFCompute(std::function<Expr (Var, Var, Var)> f) {
-    return [f](const Array<Var>& i) { return f(i[0], i[1], i[2]); };
+inline FCompute GetFCompute(std::function<Expr(Var, Var, Var)> f) {
+    return [f] (const Array<Var>& i) { return f(i[0], i[1], i[2]); };
 }
-inline FCompute GetFCompute(std::function<Expr (Var, Var, Var, Var)> f) {
-    return [f](const Array<Var>& i) { return f(i[0], i[1], i[2], i[3]); };
+inline FCompute GetFCompute(std::function<Expr(Var, Var, Var, Var)> f) {
+    return [f] (const Array<Var>& i) { return f(i[0], i[1], i[2], i[3]); };
 }
 
 
@@ -96,6 +96,10 @@ public:
     }
 
     Expr operator()(Array<Expr> indices) const;
+
+    std::vector<Tensor> InputTensors() const;
+
+    bool IsRTensor() const;
 
     friend std::ostream& operator<<(std::ostream &os, const Tensor& t) {
         os << "Tensor(shape=" << t.shape()

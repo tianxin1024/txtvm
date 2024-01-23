@@ -48,7 +48,6 @@ public:
 };
 
 Expr IntConstant(int64_t value);
-// Expr FloatConstant(int64_t value);
 Expr FloatConstant(double value);
 
 class ExprNode : public Node {
