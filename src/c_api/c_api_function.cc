@@ -1,6 +1,7 @@
 #include "txtvm/expr.h"
 #include "txtvm/op.h"
 #include "txtvm/tensor.h"
+#include "txtvm/expr_util.h"
 #include "c_api_registry.h"
 
 namespace dmlc {
@@ -105,6 +106,10 @@ TVM_REGISTER_API(_TensorInput)
         static_cast<DataType>(static_cast<int>(args.at(1))));
 });
 
+TVM_REGISTER_API(simplify)
+.set_body([](const ArgStack& args, RetValue *ret) {
+    *ret = Simplify(args.at(0));
+});
 
 TVM_REGISTER_API(format_str)
 .set_body([](const ArgStack& args, RetValue *ret) {
