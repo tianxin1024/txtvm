@@ -2,6 +2,7 @@
 #define TVM_TENSOR_H_
 
 #include "expr.h"
+#include "base.h"
 #include "array.h"
 
 namespace tvm {

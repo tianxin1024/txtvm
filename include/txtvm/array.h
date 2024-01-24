@@ -81,6 +81,45 @@ public:
         return static_cast<const ArrayNode*>(node_.get())->data.size();
     }
 
+    inline void CopyOnWrite() {
+        if (node_.get() == nullptr || node_.unique()) return ;
+        node_ = std::make_shared<ArrayNode>(
+            *static_cast<const ArrayNode*>(node_.get()));
+    }
+
+    inline void push_back(const T& item) {
+        this->CopyOnWrite();
+        static_cast<ArrayNode*>(node_.get())->data.push_back(item.node_);
+    }
+
+    inline void Set(size_t i, const T& value) {
+        this->CopyOnWrite();
+        static_cast<ArrayNode*>(node_.get())->data[i] = value.node_;
+    }
+
+    struct ArrayItemRef {
+        Array<T>* parent;
+        size_t index;
+
+        inline ArrayItemRef& operator=(const T& other) {
+            parent->Set(index, other);
+            return *this;
+        }
+
+        inline operator T() const {
+            return (*static_cast<const Array<T>*>(parent))[index];
+        }
+
+        friend std::ostream& operator<<(
+            std::ostream &os, const typename Array<T>::ArrayItemRef& r) {
+            return os << r.operator T();
+        }
+    };
+
+    inline ArrayItemRef operator[](size_t i) {
+        return ArrayItemRef{this, i};
+    }
+
     friend std::ostream& operator<<(std::ostream &os, const Array<T>& r) {
         for (size_t i = 0; i < r.size(); ++i) {
             if (i == 0) {
