@@ -1,13 +1,13 @@
 from __future__ import absolute_import as _abs
 from . import expr as _expr
 
-constant_canonical_key = '__constant__'
+const_canonical_key = '__constant__'
 
 def canonical_to_expr(c):
     elements = []
     # for k, v in sorted(c.items()):
     for k, v in sorted(c.items(), key=lambda item : item[1]):
-        if k == constant_canonical_key and v != 0:
+        if k == const_canonical_key and v != 0:
             elements.append(_expr.const(v))
         elif v == 0:
             continue
@@ -36,6 +36,10 @@ class AddOp(BinaryOp):
 
     def format_reduce_str(self, src, rd):
         return "reduce_sum(%s, rdom=%s)" % (src, str(rd))
+
+    def format_reduce_stmt_str(self, src):
+        # a temporary hack for now
+        return "+ %s" % (src)
 
     def canonical(self, lhs, rhs):
         lhs = lhs.copy()
@@ -89,8 +93,15 @@ class DivOp(BinaryOp):
         erhs = canonical_to_expr(rhs)
         if isinstance(erhs, _expr.ConstExpr):
             lhs = lhs.copy()
+            remove = []
             for k, v in lhs.items():
-                lhs[k] /= erhs.value
+                if k == const_canonical_key:
+                    lhs[k] /= erhs.value
+                else:
+                    lhs[k / erhs] = 1
+                    remove.append(k)
+            for k in remove:
+                del lhs[k]
             return lhs
         elhs = canonical_to_expr(lhs)
         return {elhs / erhs: 1}

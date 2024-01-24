@@ -7,3 +7,5 @@ from .expr_util import *
 from .tensor import Tensor
 from .domain import RDom, Range, infer_range
 from .split import Split
+from .buffer import Scope, Buffer
+from .schedule import Schedule
