@@ -16,10 +16,10 @@ class NodeRef;
 class UnaryOp;
 class BinaryOp;
 
-enum DataType {
-    kUnknown,
-    kInt32,
-    kFloat32
+enum DataType : int {
+    kUnknown = 0,
+    kInt32 = 1,
+    kFloat32 = 2
 };
 
 enum NodeType {
@@ -37,10 +37,18 @@ class AttrVisitor {
 public:
     virtual void Visit(const char* key, double* value) = 0;
     virtual void Visit(const char* key, int64_t* value) = 0;
-    virtual void Visit(const char* key, DataType* value) = 0;
+    virtual void Visit(const char* key, int* value) = 0;
     virtual void Visit(const char* key, std::string* value) = 0;
     virtual void Visit(const char* key, const UnaryOp** value) = 0;
     virtual void Visit(const char* key, const BinaryOp** value) = 0;
+
+    template<typename ENum,
+            typename = typename std::enable_if<std::is_enum<ENum>::value>::type>
+    void Visit(const char* key, ENum* ptr) {
+        static_assert(std::is_same<int, typename std::underlying_type<ENum>::type>::value,
+                "declare enum to be enum int to use visitor");
+        this->Visit(key, reinterpret_cast<int*>(ptr));
+    }
 };
 
 using FNodeRefVisit = std::function<void(const char* key, NodeRef* ref)>;
