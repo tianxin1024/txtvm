@@ -22,18 +22,18 @@ def test_schedule():
     Cy0 = tvm.Split(dim=1, factor=64)
     Cx1 = tvm.Split(dim=0, factor=8)
     Cy1 = tvm.Split(dim=1, factor=8)
-    Tk = tvm.Split(dom=0, factor=8, rdom=True)
+    Tk = tvm.Split(dim=0, factor=8, rdom=True)
 
     schC.add_split(Cx0)
     schC.add_split(Cy0)
     schC.add_split(Cx1)
     schC.add_split(Cy1)
     schC.attach(Cy1, schT)
-    schT.attach(Tk, schA)
-    schT.attach(Tk, schB)
+    # schT.attach(Tk, schA)
+    # schT.attach(Tk, schB)
 
-    body = schC.readize()
-    print('\n'.join(body))
+    # body = schC.realize()
+    # print('\n'.join(body))
 
 if __name__ == "__main__":
     test_schedule()

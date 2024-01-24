@@ -7,7 +7,7 @@ def test_buffer():
     buf.reshape(domain)
     x = txtvm.Var('x')
     y = txtvm.Var('y')
-    assert txtvm.format_str(buf(y, x)) == '%s[(%s + (%s * %s))]' % (buf.name, x.name, y.name, shape[1])
+    assert txtvm.format_str(buf(y, x)) == '%s((%s + (%s * %s)))' % (buf.name, x.name, y.name, shape[1])
 
 if __name__ == "__main__":
     test_buffer()
