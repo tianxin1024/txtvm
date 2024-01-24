@@ -40,6 +40,26 @@ class Expr(NodeBase):
 class Var(Expr):
     pass
 
+@register_node("IntNode")
+class IntExpr(Expr):
+    pass
+
+@register_node("FloatNode")
+class FloatExpr(Expr):
+    pass
+
+@register_node("UnaryOpNode")
+class UnaryOpExpr(Expr):
+    pass
+
 @register_node("BinaryOpNode")
 class BinaryOpExpr(Expr):
+    pass
+
+@register_node("ReduceNode")
+class ReduceExpr(Expr):
+    pass
+
+@register_node("TensorNode")
+class TensorRefExpr(Expr):
     pass
