@@ -18,7 +18,20 @@ TEST(Expr, Reduction) {
     auto z = sum(x + 1 + 2, rdom);
     std::ostringstream os;
     os << z;
+    // std::cout << os.str() << std::endl;
+    // reduce(+, ((x + 1) + 2), rdomain([[0, 3)]))
     CHECK(os.str() == "reduce(+, ((x + 1) + 2), rdomain([[0, 3]]))");
+}
+
+TEST(Expr, Simplify) {
+    using namespace tvm;
+    Var x("x");
+    auto z = max(x + 1 + 2, x + 10) * 100;
+    std::ostringstream os;
+    os << Simplify(z);
+    // std::cout << os.str() << std::endl;
+    // CHECK(os.str() == "((x * 100) + 1000)");
+    CHECK(os.str() == "(max(((x + 1) + 2), (x + 10)) * 100)");
 }
 
 int main (int argc, char ** argv) {

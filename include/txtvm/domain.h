@@ -38,7 +38,7 @@ public:
         return static_cast<const RangeNode*>(node_.get())->end;
     }
     friend std::ostream& operator<<(std::ostream &os, const Range& r) {
-        os << '[' << r.begin() << ", " << r.end() << ')';
+        os << '[' << r.begin() << ", " << r.end() << ']';
         return os;
     }
 };
