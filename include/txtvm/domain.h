@@ -8,6 +8,63 @@
 
 namespace tvm {
 
+class RangeNode;
+
+class RDomainNode;
+
+class Range : public NodeRef {
+public:
+    Range() {}
+    Range(Expr begin, Expr end);
+    Expr extent() const;
+
+    inline const RangeNode* operator->() const;
+    inline const Expr& begin() const;
+    inline const Expr& end() const;
+
+    // inline const Expr& begin() const {
+    //     return static_cast<const RangeNode*>(node_.get())->begin;
+    // }
+    // inline const Expr& end() const {
+    //     return static_cast<const RangeNode*>(node_.get())->end;
+    // }
+    
+    friend std::ostream& operator<<(std::ostream &os, const Range& r) {
+        os << '[' << r.begin() << ", " << r.end() << ']';
+        return os;
+    }
+};
+
+using Domain = Array<Range>;
+
+class RDomain : public NodeRef {
+public:
+    RDomain() {}
+    explicit RDomain(Domain domain);
+
+    explicit RDomain(std::initializer_list<Range> domain)
+            : RDomain(Domain(domain)) {}
+
+    inline const RDomainNode* operator->() const;
+
+    inline size_t ndim() const;
+
+    inline Var index(size_t i) const;
+
+    inline Var i0() const {
+        return index(0);
+    }
+
+    inline const Domain& domain() const;
+
+    friend std::ostream& operator<<(std::ostream &os, const RDomain& r) {
+        os << "rdomain(" << r.domain() << ")";
+        return os;
+    }
+};
+
+using RDom = RDomain;
+
 class RangeNode : public Node {
 public:
     Expr begin;
@@ -26,24 +83,6 @@ public:
     void VisitAttrs(AttrVisitor* visitor) override {}
 };
 
-class Range : public NodeRef {
-public:
-    Range() {}
-    Range(Expr begin, Expr end);
-    Expr extent() const;
-    inline const Expr& begin() const {
-        return static_cast<const RangeNode*>(node_.get())->begin;
-    }
-    inline const Expr& end() const {
-        return static_cast<const RangeNode*>(node_.get())->end;
-    }
-    friend std::ostream& operator<<(std::ostream &os, const Range& r) {
-        os << '[' << r.begin() << ", " << r.end() << ']';
-        return os;
-    }
-};
-
-using Domain = Array<Range>;
 
 class RDomainNode : public Node {
 public:
@@ -67,40 +106,34 @@ public:
     void VisitAttrs(AttrVisitor* visitor) override {}
 };
 
-class RDomain : public NodeRef {
-public:
-    RDomain() {}
-    explicit RDomain(Domain domain);
+// implements of inline functions
+inline const RangeNode* Range::operator->() const {
+    return static_cast<const RangeNode*>(node_.get());
+}
 
-    explicit RDomain(std::initializer_list<Range> domain)
-            : RDomain(Domain(domain)) {}
+inline const Expr& Range::begin() const {
+    return (*this)->begin;
+}
 
-    explicit RDomain(std::shared_ptr<Node>&& nptr) : NodeRef(std::move(nptr)) {
-        CHECK(node_.get() != nullptr);
-        CHECK(node_->is_type<RDomainNode>());
-    }
+inline const Expr& Range::end() const {
+    return (*this)->end;
+}
 
-    inline size_t ndim() const {
-        return static_cast<const RDomainNode*>(node_.get())->index.size();
-    }
+inline const RDomainNode* RDomain::operator->() const {
+    return static_cast<const RDomainNode*>(node_.get());
+}
 
-    inline Var i0() const {
-        return index(0);
-    }
+inline size_t RDomain::ndim() const {
+    return (*this)->index.size();
+}
 
-    inline Var index(size_t i) const {
-        return static_cast<const RDomainNode*>(node_.get())->index[i];
-    }
+inline Var RDomain::index(size_t i) const {
+    return (*this)->index[i];
+}
 
-    inline const Domain& domain() const {
-        return static_cast<const RDomainNode*>(node_.get())->domain;
-    }
-
-    friend std::ostream& operator<<(std::ostream &os, const RDomain& r) {
-        os << "rdomain(" << r.domain() << ")";
-        return os;
-    }
-};
+inline const Domain& RDomain::domain() const {
+    return (*this)->domain;
+}
 
 }; // end of namespace tvm
 
