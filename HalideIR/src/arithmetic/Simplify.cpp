@@ -20,7 +20,7 @@
 #define snprintf _snprintf
 #endif
 
-namespace HalideIR {
+namespace Halide {
 namespace Internal {
 
 using std::string;
@@ -839,9 +839,7 @@ private:
                    add_a_a &&
                    const_int(add_a_a->b, &ia) &&
                    const_int(div_a->b, &ib) && ib &&
-                   const_int(b, &ic) &&
-                   // disable when ic < 0 since hardware may round up for div
-                   ic >= 0) {
+                   const_int(b, &ic)) {
             // ((a + ia) / ib + ic) -> (a + (ia + ib*ic)) / ib
             expr = mutate((add_a_a->a + IntImm::make(op->type, ia + ib*ic)) / div_a->b);
         } else if (mul_a &&
@@ -1538,8 +1536,6 @@ private:
         const Add *add_a = a.as<Add>();
         const Sub *sub_a = a.as<Sub>();
         const Div *div_a = a.as<Div>();
-        const Max *max_a = a.as<Max>();
-        const Min *min_a = a.as<Min>();
         const Div *div_a_a = nullptr;
         const Mul *mul_a_a = nullptr;
         const Mul *mul_a_b = nullptr;
@@ -1570,10 +1566,6 @@ private:
             add_a_b = sub_a->b.as<Add>();
             sub_a_a = sub_a->a.as<Sub>();
             sub_a_b = sub_a->b.as<Sub>();
-        } else if (max_a) {
-            mul_a_a = max_a->a.as<Mul>();
-        } else if (min_a) {
-            mul_a_a = min_a->a.as<Mul>();
         }
 
         if (add_a_a) {
@@ -1691,49 +1683,47 @@ private:
                 expr = mutate(mul_a->a / make_const(op->type, div_imp(ib, ia)));
             }
         } else if (no_overflow(op->type) &&
-                   (add_a || sub_a || max_a || min_a) &&
+                   add_a &&
                    mul_a_a &&
                    const_int(mul_a_a->b, &ia) &&
                    const_int(b, &ib) &&
                    ib > 0 &&
                    (ia % ib == 0)) {
-            // Pull out terms that are a multiple of the divisor
+            // Pull terms that are a multiple of the divisor out
+            // (x*4 + y) / 2 -> x*2 + y/2
             Expr ratio = make_const(op->type, div_imp(ia, ib));
-            if (add_a) {
-              // (x*4 + y) / 2 -> x*2 + y/2
-              expr = mutate((mul_a_a->a * ratio) + (add_a->b / b));
-            } else if (sub_a) {
-              // (x*4 - y) / 2 -> x*2 + (-y)/2
-              expr = mutate((mul_a_a->a * ratio) + (-sub_a->b) / b);
-            } else if (max_a) {
-              // max(x*4, y) / 2 -> max(x*2, y/2)
-              expr = mutate(max(mul_a_a->a * ratio, max_a->b / b));
-            } else if (min_a) {
-              // min(x*4, y) / 2 -> min(x*2, y/2)
-              expr = mutate(min(mul_a_a->a * ratio, min_a->b / b));
-            }
+            expr = mutate((mul_a_a->a * ratio) + (add_a->b / b));
         } else if (no_overflow(op->type) &&
-                   (add_a || sub_a || max_a || min_a) &&
+                   add_a &&
                    mul_a_b &&
                    const_int(mul_a_b->b, &ia) &&
                    const_int(b, &ib) &&
                    ib > 0 &&
                    (ia % ib == 0)) {
-            // Pull out terms that are a multiple of the divisor
+            // (y + x*4) / 2 -> y/2 + x*2
             Expr ratio = make_const(op->type, div_imp(ia, ib));
-            if (add_a) {
-                // (y + x*4) / 2 -> y/2 + x*2
-                expr = mutate((add_a->a / b) + (mul_a_b->a * ratio));
-            } else if (sub_a) {
-                // (y - x*4) / 2 -> y/2 - x*2
-                expr = mutate((sub_a->a / b) - (mul_a_b->a * ratio));
-            } else if (max_a) {
-                // max(y, x*4) / 2 -> max(y/2, x*2)
-                expr = mutate(max(sub_a->a / b, mul_a_b->a * ratio));
-            } else if (min_a) {
-                // min(y, x*4) / 2 -> min(y/2, x*2)
-                expr = mutate(min(sub_a->a / b, mul_a_b->a * ratio));
-            }
+            expr = mutate((add_a->a / b) + (mul_a_b->a * ratio));
+        } else if (no_overflow(op->type) &&
+                   sub_a &&
+                   mul_a_a &&
+                   const_int(mul_a_a->b, &ia) &&
+                   const_int(b, &ib) &&
+                   ib > 0 &&
+                   (ia % ib == 0)) {
+            // Pull terms that are a multiple of the divisor out
+            // (x*4 - y) / 2 -> x*2 + (-y)/2
+            Expr ratio = make_const(op->type, div_imp(ia, ib));
+            expr = mutate((mul_a_a->a * ratio) + (-sub_a->b) / b);
+        } else if (no_overflow(op->type) &&
+                   sub_a &&
+                   mul_a_b &&
+                   const_int(mul_a_b->b, &ia) &&
+                   const_int(b, &ib) &&
+                   ib > 0 &&
+                   (ia % ib == 0)) {
+            // (y - x*4) / 2 -> y/2 - x*2
+            Expr ratio = make_const(op->type, div_imp(ia, ib));
+            expr = mutate((sub_a->a / b) - (mul_a_b->a * ratio));
         } else if (no_overflow(op->type) &&
                    add_a &&
                    add_a_a &&
@@ -2029,9 +2019,7 @@ private:
                    (ia % ib == 0)) {
             // (x * (b*a) + y) % b -> (y % b)
             expr = mutate(add_a->b % b);
-        } // Because TVM mod is not eucliean mod, this simplification will
-          // become wrong when y is negative in (y + (b*a)) % b
-          /* else if (no_overflow(op->type) &&
+        } else if (no_overflow(op->type) &&
                    add_a &&
                    const_int(add_a->b, &ia) &&
                    const_int(b, &ib) &&
@@ -2039,7 +2027,7 @@ private:
                    (ia % ib == 0)) {
             // (y + (b*a)) % b -> (y % b)
             expr = mutate(add_a->a % b);
-        }*/ else if (no_overflow(op->type) &&
+        } else if (no_overflow(op->type) &&
                    add_a &&
                    mul_a_b &&
                    const_int(mul_a_b->b, &ia) &&
@@ -3992,8 +3980,7 @@ private:
             if (propagate_indeterminate_expression(a, b, op->type, &expr)) {
                 return;
             }
-            // avoid shift simplify to division as they are inaccurate.
-            /*
+
             int64_t ib = 0;
             if (const_int(b, &ib) || const_uint(b, (uint64_t *)(&ib))) {
                 Type t = op->type;
@@ -4018,7 +4005,8 @@ private:
                     user_warning << "Cannot replace bit shift with arithmetic "
                                  << "operator (integer overflow).\n";
                 }
-            }*/
+            }
+
             if (a.same_as(op->args[0]) && b.same_as(op->args[1])) {
                 expr = self;
             } else if (op->is_intrinsic(Call::shift_left)) {
@@ -4031,10 +4019,11 @@ private:
             if (propagate_indeterminate_expression(a, b, op->type, &expr)) {
                 return;
             }
-            /*
+
             int64_t ib = 0;
             uint64_t ub = 0;
             int bits;
+
             if (const_int(b, &ib) &&
                 !b.type().is_max(ib) &&
                 is_const_power_of_two_integer(make_const(a.type(), ib + 1), &bits)) {
@@ -4045,8 +4034,7 @@ private:
             } else if (const_uint(b, &ub) &&
                        is_const_power_of_two_integer(make_const(a.type(), ub + 1), &bits)) {
                 expr = Mod::make(a, make_const(a.type(), ub + 1));
-            */
-            if (a.same_as(op->args[0]) && b.same_as(op->args[1])) {
+            } else if (a.same_as(op->args[0]) && b.same_as(op->args[1])) {
                 expr = self;
             } else {
                 expr = a & b;
@@ -4717,7 +4705,7 @@ private:
             // by Halide and is expected to always fail.
             const Call *call = a->message.as<Call>();
             const bool const_false_conditions_expected =
-                call && call->name == "halideir_error_specialize_fail";
+                call && call->name == "halide_error_specialize_fail";
             if (!const_false_conditions_expected) {
                 user_warning << "This pipeline is guaranteed to fail an assertion at runtime: \n"
                              << stmt << "\n";
@@ -5231,7 +5219,7 @@ void check_algebra() {
 
     check((x*8) % 4, 0);
     check((x*8 + y) % 4, y % 4);
-    // check((y + 8) % 4, y % 4);
+    check((y + 8) % 4, y % 4);
     check((y + x*8) % 4, y % 4);
     check((y*16 + 13) % 2, 1);
 
@@ -6197,9 +6185,9 @@ void simplify_test() {
     check_overflow();
 
     // Check bitshift operations
-    //check(cast(Int(16), x) << 10, cast(Int(16), x) * 1024);
-    //check(cast(Int(16), x) >> 10, cast(Int(16), x) / 1024);
-    //check(cast(Int(16), x) << -10, cast(Int(16), x) / 1024);
+    check(cast(Int(16), x) << 10, cast(Int(16), x) * 1024);
+    check(cast(Int(16), x) >> 10, cast(Int(16), x) / 1024);
+    check(cast(Int(16), x) << -10, cast(Int(16), x) / 1024);
     // Correctly triggers a warning:
     //check(cast(Int(16), x) << 20, cast(Int(16), x) << 20);
 
@@ -6387,20 +6375,20 @@ void simplify_test() {
         Expr r1, r2, r3;
 
         r1 = min(one, two);
-        internal_assert(r1.type() == halideir_type_of<uint16_t>());
+        internal_assert(r1.type() == halide_type_of<uint16_t>());
         r2 = min(one, two, one);
-        internal_assert(r2.type() == halideir_type_of<uint16_t>());
+        internal_assert(r2.type() == halide_type_of<uint16_t>());
         // Explicitly passing 'two' as an Expr, rather than an int, will defeat this logic.
         r3 = min(one, Expr(two), one);
-        internal_assert(r3.type() == halideir_type_of<int>());
+        internal_assert(r3.type() == halide_type_of<int>());
 
         r1 = max(one, two);
-        internal_assert(r1.type() == halideir_type_of<uint16_t>());
+        internal_assert(r1.type() == halide_type_of<uint16_t>());
         r2 = max(one, two, one);
-        internal_assert(r2.type() == halideir_type_of<uint16_t>());
+        internal_assert(r2.type() == halide_type_of<uint16_t>());
         // Explicitly passing 'two' as an Expr, rather than an int, will defeat this logic.
         r3 = max(one, Expr(two), one);
-        internal_assert(r3.type() == halideir_type_of<int>());
+        internal_assert(r3.type() == halide_type_of<int>());
     }
 
     {

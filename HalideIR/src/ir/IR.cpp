@@ -2,30 +2,27 @@
 //#include "IRPrinter.h"
 #include "IRVisitor.h"
 
-namespace HalideIR {
+namespace Halide {
 
-EXPORT Expr::Expr(int8_t x) : Expr(Internal::IntImm::make(Int(8), x)) {}
-EXPORT Expr::Expr(int16_t x) : Expr(Internal::IntImm::make(Int(16), x)) {}
-EXPORT Expr::Expr(int32_t x) : Expr(Internal::IntImm::make(Int(32), x)) {}
-EXPORT Expr::Expr(int64_t x) : Expr(Internal::IntImm::make(Int(64), x)) {}
-EXPORT Expr::Expr(uint8_t x) : Expr(Internal::UIntImm::make(UInt(8), x)) {}
-EXPORT Expr::Expr(uint16_t x) : IRHandle(Internal::UIntImm::make(UInt(16), x)) {}
-EXPORT Expr::Expr(uint32_t x) : IRHandle(Internal::UIntImm::make(UInt(32), x)) {}
-EXPORT Expr::Expr(uint64_t x) : IRHandle(Internal::UIntImm::make(UInt(64), x)) {}
-EXPORT Expr::Expr(float16_t x) : IRHandle(Internal::FloatImm::make(Float(16), (double)x)) {}
-EXPORT Expr::Expr(float x) : IRHandle(Internal::FloatImm::make(Float(32), x)) {}
-EXPORT Expr::Expr(double x) : IRHandle(Internal::FloatImm::make(Float(64), x)) {}
-EXPORT Expr::Expr(const std::string &s) : IRHandle(Internal::StringImm::make(s)) {}
+Expr::Expr(int8_t x) : Expr(Internal::IntImm::make(Int(8), x)) {}
+Expr::Expr(int16_t x) : Expr(Internal::IntImm::make(Int(16), x)) {}
+Expr::Expr(int32_t x) : Expr(Internal::IntImm::make(Int(32), x)) {}
+Expr::Expr(int64_t x) : Expr(Internal::IntImm::make(Int(64), x)) {}
+Expr::Expr(uint8_t x) : Expr(Internal::UIntImm::make(UInt(8), x)) {}
+Expr::Expr(uint16_t x) : IRHandle(Internal::UIntImm::make(UInt(16), x)) {}
+Expr::Expr(uint32_t x) : IRHandle(Internal::UIntImm::make(UInt(32), x)) {}
+Expr::Expr(uint64_t x) : IRHandle(Internal::UIntImm::make(UInt(64), x)) {}
+Expr::Expr(float16_t x) : IRHandle(Internal::FloatImm::make(Float(16), (double)x)) {}
+Expr::Expr(float x) : IRHandle(Internal::FloatImm::make(Float(32), x)) {}
+Expr::Expr(double x) : IRHandle(Internal::FloatImm::make(Float(64), x)) {}
+Expr::Expr(const std::string &s) : IRHandle(Internal::StringImm::make(s)) {}
 
-EXPORT VarExpr::VarExpr(const std::string &name_hint,  Type t)
+VarExpr::VarExpr(const std::string &name_hint,  Type t)
     : VarExpr(Internal::Variable::make(t, name_hint)) {}
 
 namespace Internal {
 
-#if defined(__clang__)
-__attribute__((no_sanitize("undefined")))
-#endif
-EXPORT Expr IntImm::make(Type t, int64_t value) {
+Expr IntImm::make(Type t, int64_t value) {
     internal_assert(t.is_int() && t.is_scalar())
         << "IntImm must be a scalar Int\n";
     internal_assert(t.bits() == 8 || t.bits() == 16 || t.bits() == 32 || t.bits() == 64)
@@ -36,13 +33,13 @@ EXPORT Expr IntImm::make(Type t, int64_t value) {
     // Then sign-extending to get them back
     value >>= (64 - t.bits());
 
-    NodePtr<IntImm> node = make_node<IntImm>();
+    std::shared_ptr<IntImm> node = std::make_shared<IntImm>();
     node->type = t;
     node->value = value;
     return Expr(node);
 }
 
-EXPORT Expr UIntImm::make(Type t, uint64_t value) {
+Expr UIntImm::make(Type t, uint64_t value) {
     internal_assert(t.is_uint() && t.is_scalar())
         << "UIntImm must be a scalar UInt\n";
     internal_assert(t.bits() == 1 || t.bits() == 8 || t.bits() == 16 || t.bits() == 32 || t.bits() == 64)
@@ -52,16 +49,16 @@ EXPORT Expr UIntImm::make(Type t, uint64_t value) {
     value <<= (64 - t.bits());
     value >>= (64 - t.bits());
 
-    NodePtr<UIntImm> node = make_node<UIntImm>();
+    std::shared_ptr<UIntImm> node = std::make_shared<UIntImm>();
     node->type = t;
     node->value = value;
     return Expr(node);
 }
 
-EXPORT Expr FloatImm::make(Type t, double value) {
-  internal_assert(t.is_scalar())
-      << "FloatImm must be a scalar\n";
-  NodePtr<FloatImm> node = make_node<FloatImm>();
+Expr FloatImm::make(Type t, double value) {
+  internal_assert(t.is_float() && t.is_scalar())
+      << "FloatImm must be a scalar Float\n";
+  std::shared_ptr<FloatImm> node = std::make_shared<FloatImm>();
   node->type = t;
   switch (t.bits()) {
     case 16:
@@ -80,63 +77,63 @@ EXPORT Expr FloatImm::make(Type t, double value) {
   return Expr(node);
 }
 
-EXPORT Expr StringImm::make(const std::string &val) {
-    NodePtr<StringImm> node = make_node<StringImm>();
+Expr StringImm::make(const std::string &val) {
+    std::shared_ptr<StringImm> node = std::make_shared<StringImm>();
     node->type = type_of<const char *>();
     node->value = val;
     return Expr(node);
 }
 
 
-EXPORT Expr Cast::make(Type t, Expr v) {
+Expr Cast::make(Type t, Expr v) {
     internal_assert(v.defined()) << "Cast of undefined\n";
     internal_assert(t.lanes() == v.type().lanes()) << "Cast may not change vector widths\n";
 
-    NodePtr<Cast> node = make_node<Cast>();
+    std::shared_ptr<Cast> node = std::make_shared<Cast>();
     node->type = t;
     node->value = std::move(v);
     return Expr(node);
 }
 
 
-EXPORT Expr And::make(Expr a, Expr b) {
+Expr And::make(Expr a, Expr b) {
     internal_assert(a.defined()) << "And of undefined\n";
     internal_assert(b.defined()) << "And of undefined\n";
     internal_assert(a.type().is_bool()) << "lhs of And is not a bool\n";
     internal_assert(b.type().is_bool()) << "rhs of And is not a bool\n";
     internal_assert(a.type() == b.type()) << "And of mismatched types\n";
 
-    NodePtr<And> node = make_node<And>();
+    std::shared_ptr<And> node = std::make_shared<And>();
     node->type = Bool(a.type().lanes());
     node->a = std::move(a);
     node->b = std::move(b);
     return Expr(node);
 }
 
-EXPORT Expr Or::make(Expr a, Expr b) {
+Expr Or::make(Expr a, Expr b) {
     internal_assert(a.defined()) << "Or of undefined\n";
     internal_assert(b.defined()) << "Or of undefined\n";
     internal_assert(a.type().is_bool()) << "lhs of Or is not a bool\n";
     internal_assert(b.type().is_bool()) << "rhs of Or is not a bool\n";
     internal_assert(a.type() == b.type()) << "Or of mismatched types\n";
 
-    NodePtr<Or> node = make_node<Or>();
+    std::shared_ptr<Or> node = std::make_shared<Or>();
     node->type = Bool(a.type().lanes());
     node->a = std::move(a);
     node->b = std::move(b);
     return Expr(node);
 }
 
-EXPORT Expr Not::make(Expr a) {
+Expr Not::make(Expr a) {
     internal_assert(a.defined()) << "Not of undefined\n";
     internal_assert(a.type().is_bool()) << "argument of Not is not a bool\n";
-    NodePtr<Not> node = make_node<Not>();
+    std::shared_ptr<Not> node = std::make_shared<Not>();
     node->type = Bool(a.type().lanes());
     node->a = std::move(a);
     return Expr(node);
 }
 
-EXPORT Expr Select::make(Expr condition, Expr true_value, Expr false_value) {
+Expr Select::make(Expr condition, Expr true_value, Expr false_value) {
     internal_assert(condition.defined()) << "Select of undefined\n";
     internal_assert(true_value.defined()) << "Select of undefined\n";
     internal_assert(false_value.defined()) << "Select of undefined\n";
@@ -146,7 +143,7 @@ EXPORT Expr Select::make(Expr condition, Expr true_value, Expr false_value) {
                     condition.type().lanes() == true_value.type().lanes())
         << "In Select, vector lanes of condition must either be 1, or equal to vector lanes of arguments\n";
 
-    NodePtr<Select> node = make_node<Select>();
+    std::shared_ptr<Select> node = std::make_shared<Select>();
     node->type = true_value.type();
     node->condition = std::move(condition);
     node->true_value = std::move(true_value);
@@ -155,14 +152,14 @@ EXPORT Expr Select::make(Expr condition, Expr true_value, Expr false_value) {
 }
 
 
-EXPORT Expr Load::make(Type type, VarExpr buffer_var, Expr index, Expr predicate) {
+Expr Load::make(Type type, VarExpr buffer_var, Expr index, Expr predicate) {
     internal_assert(predicate.defined()) << "Load with undefined predicate\n";
     internal_assert(index.defined()) << "Load of undefined\n";
     internal_assert(type.lanes() == index.type().lanes()) << "Vector lanes of Load must match vector lanes of index\n";
     internal_assert(type.lanes() == predicate.type().lanes())
         << "Vector lanes of Load must match vector lanes of predicate\n";
 
-    NodePtr<Load> node = make_node<Load>();
+    std::shared_ptr<Load> node = std::make_shared<Load>();
     node->type = type;
     node->buffer_var = std::move(buffer_var);
     node->index = std::move(index);
@@ -172,14 +169,14 @@ EXPORT Expr Load::make(Type type, VarExpr buffer_var, Expr index, Expr predicate
 }
 
 
-EXPORT Expr Ramp::make(Expr base, Expr stride, int lanes) {
+Expr Ramp::make(Expr base, Expr stride, int lanes) {
     internal_assert(base.defined()) << "Ramp of undefined\n";
     internal_assert(stride.defined()) << "Ramp of undefined\n";
     internal_assert(base.type().is_scalar()) << "Ramp with vector base\n";
     internal_assert(stride.type().is_scalar()) << "Ramp with vector stride\n";
     internal_assert(lanes > 1) << "Ramp of lanes <= 1\n";
     internal_assert(stride.type() == base.type()) << "Ramp of mismatched types\n";
-    NodePtr<Ramp> node = make_node<Ramp>();
+    std::shared_ptr<Ramp> node = std::make_shared<Ramp>();
     internal_assert(base.defined()) << "Ramp of undefined\n";
     node->type = base.type().with_lanes(lanes);
     node->base = base;
@@ -188,22 +185,22 @@ EXPORT Expr Ramp::make(Expr base, Expr stride, int lanes) {
     return Expr(node);
 }
 
-EXPORT Expr Broadcast::make(Expr value, int lanes) {
+Expr Broadcast::make(Expr value, int lanes) {
     internal_assert(value.defined()) << "Broadcast of undefined\n";
     internal_assert(value.type().is_scalar()) << "Broadcast of vector\n";
     internal_assert(lanes != 1) << "Broadcast of lanes 1\n";
-    NodePtr<Broadcast> node = make_node<Broadcast>();
+    std::shared_ptr<Broadcast> node = std::make_shared<Broadcast>();
     node->type = value.type().with_lanes(lanes);
     node->value = std::move(value);
     node->lanes = lanes;
     return Expr(node);
 }
 
-EXPORT Expr Let::make(VarExpr var, Expr value, Expr body) {
+Expr Let::make(VarExpr var, Expr value, Expr body) {
     internal_assert(value.defined()) << "Let of undefined\n";
     internal_assert(body.defined()) << "Let of undefined\n";
     internal_assert(value.type() == var.type()) << "Let var mismatch\n";
-    NodePtr<Let> node = make_node<Let>();
+    std::shared_ptr<Let> node = std::make_shared<Let>();
     node->type = body.type();
     node->var = std::move(var);
     node->value = std::move(value);
@@ -211,19 +208,19 @@ EXPORT Expr Let::make(VarExpr var, Expr value, Expr body) {
     return Expr(node);
 }
 
-EXPORT Stmt LetStmt::make(VarExpr var, Expr value, Stmt body) {
+Stmt LetStmt::make(VarExpr var, Expr value, Stmt body) {
     internal_assert(value.defined()) << "Let of undefined\n";
     internal_assert(body.defined()) << "Let of undefined\n";
     internal_assert(value.type() == var.type()) << "Let var mismatch\n";
-    NodePtr<LetStmt> node = make_node<LetStmt>();
+    std::shared_ptr<LetStmt> node = std::make_shared<LetStmt>();
     node->var = std::move(var);
     node->value = std::move(value);
     node->body = std::move(body);
     return Stmt(node);
 }
 
-EXPORT Stmt AttrStmt::make(NodeRef node, std::string attr_key, Expr value, Stmt body) {
-  auto n = make_node<AttrStmt>();
+Stmt AttrStmt::make(NodeRef node, std::string attr_key, Expr value, Stmt body) {
+  auto n = std::make_shared<AttrStmt>();
   n->node = node;
   n->attr_key = std::move(attr_key);
   n->value = std::move(value);
@@ -231,30 +228,30 @@ EXPORT Stmt AttrStmt::make(NodeRef node, std::string attr_key, Expr value, Stmt 
   return Stmt(n);
 }
 
-EXPORT Stmt AssertStmt::make(Expr condition, Expr message, Stmt body) {
+Stmt AssertStmt::make(Expr condition, Expr message, Stmt body) {
     internal_assert(condition.defined()) << "AssertStmt of undefined\n";
     internal_assert(message.type() == Int(32) ||
                     message.as<StringImm>()) << "AssertStmt message must be an int or string:"
                                            << message << "\n";
 
-    NodePtr<AssertStmt> node = make_node<AssertStmt>();
+    std::shared_ptr<AssertStmt> node = std::make_shared<AssertStmt>();
     node->condition = std::move(condition);
     node->message = std::move(message);
     node->body = std::move(body);
     return Stmt(node);
 }
 
-EXPORT Stmt ProducerConsumer::make(FunctionRef func, bool is_producer, Stmt body) {
+Stmt ProducerConsumer::make(FunctionRef func, bool is_producer, Stmt body) {
     internal_assert(body.defined()) << "ProducerConsumer of undefined\n";
 
-    NodePtr<ProducerConsumer> node = make_node<ProducerConsumer>();
+    std::shared_ptr<ProducerConsumer> node = std::make_shared<ProducerConsumer>();
     node->func = std::move(func);
     node->is_producer = is_producer;
     node->body = std::move(body);
     return Stmt(node);
 }
 
-EXPORT Stmt For::make(VarExpr loop_var,
+Stmt For::make(VarExpr loop_var,
                Expr min, Expr extent,
                ForType for_type, DeviceAPI device_api,
                Stmt body) {
@@ -265,7 +262,7 @@ EXPORT Stmt For::make(VarExpr loop_var,
     internal_assert(loop_var.type().is_scalar()) << "For with vector loop_var";
     internal_assert(body.defined()) << "For of undefined\n";
 
-    NodePtr<For> node = make_node<For>();
+    std::shared_ptr<For> node = std::make_shared<For>();
     node->loop_var = std::move(loop_var);
     node->min = std::move(min);
     node->extent = std::move(extent);
@@ -275,7 +272,7 @@ EXPORT Stmt For::make(VarExpr loop_var,
     return Stmt(node);
 }
 
-EXPORT Stmt Store::make(VarExpr buffer_var, Expr value, Expr index, Expr predicate) {
+Stmt Store::make(VarExpr buffer_var, Expr value, Expr index, Expr predicate) {
     internal_assert(value.defined()) << "Store of undefined\n";
     internal_assert(index.defined()) << "Store of undefined\n";
     internal_assert(predicate.defined()) << "Store with undefined predicate\n";
@@ -283,7 +280,7 @@ EXPORT Stmt Store::make(VarExpr buffer_var, Expr value, Expr index, Expr predica
     internal_assert(value.type().lanes() == predicate.type().lanes())
         << "Vector lanes of Store must match vector lanes of predicate\n";
 
-    NodePtr<Store> node = make_node<Store>();
+    std::shared_ptr<Store> node = std::make_shared<Store>();
     node->buffer_var = std::move(buffer_var);
     node->value = std::move(value);
     node->index = std::move(index);
@@ -291,7 +288,7 @@ EXPORT Stmt Store::make(VarExpr buffer_var, Expr value, Expr index, Expr predica
     return Stmt(node);
 }
 
-EXPORT Stmt Provide::make(FunctionRef func, int value_index, Expr value, Array<Expr> args) {
+Stmt Provide::make(FunctionRef func, int value_index, Expr value, Array<Expr> args) {
     internal_assert(value_index >=0 && value_index < func->num_outputs())
         << "value index output function return value bound";
     internal_assert(value.defined()) << "Provide of undefined value\n";
@@ -299,7 +296,7 @@ EXPORT Stmt Provide::make(FunctionRef func, int value_index, Expr value, Array<E
         internal_assert(args[i].defined()) << "Provide to undefined location\n";
     }
 
-    NodePtr<Provide> node = make_node<Provide>();
+    std::shared_ptr<Provide> node = std::make_shared<Provide>();
     node->func = std::move(func);
     node->value_index = value_index;
     node->value = std::move(value);
@@ -307,7 +304,7 @@ EXPORT Stmt Provide::make(FunctionRef func, int value_index, Expr value, Array<E
     return Stmt(node);
 }
 
-EXPORT Stmt Allocate::make(VarExpr buffer_var,
+Stmt Allocate::make(VarExpr buffer_var,
                     Type type,
                     Array<Expr> extents,
                     Expr condition, Stmt body,
@@ -320,7 +317,7 @@ EXPORT Stmt Allocate::make(VarExpr buffer_var,
     internal_assert(condition.defined()) << "Allocate with undefined condition\n";
     internal_assert(condition.type().is_bool()) << "Allocate condition is not boolean\n";
 
-    NodePtr<Allocate> node = make_node<Allocate>();
+    std::shared_ptr<Allocate> node = std::make_shared<Allocate>();
     node->buffer_var = std::move(buffer_var);
     node->type = type;
     node->extents = std::move(extents);
@@ -368,7 +365,7 @@ int32_t Allocate::constant_allocation_size() const {
 }
 
 Stmt Free::make(VarExpr buffer_var) {
-    NodePtr<Free> node = make_node<Free>();
+    std::shared_ptr<Free> node = std::make_shared<Free>();
     node->buffer_var = buffer_var;
     return Stmt(node);
 }
@@ -385,7 +382,7 @@ Stmt Realize::make(FunctionRef func, int value_index, Type type,
     internal_assert(condition.defined()) << "Realize with undefined condition\n";
     internal_assert(condition.type().is_bool()) << "Realize condition is not boolean\n";
 
-    NodePtr<Realize> node = make_node<Realize>();
+    std::shared_ptr<Realize> node = std::make_shared<Realize>();
     node->func = std::move(func);
     node->value_index = value_index;
     node->type = type;
@@ -402,7 +399,7 @@ Stmt Prefetch::make(FunctionRef func, int value_index, Type type, Region bounds)
         internal_assert(bounds[i]->min.type().is_scalar()) << "Prefetch of vector size\n";
         internal_assert(bounds[i]->extent.type().is_scalar()) << "Prefetch of vector size\n";
     }
-    NodePtr<Prefetch> node = make_node<Prefetch>();
+    std::shared_ptr<Prefetch> node = std::make_shared<Prefetch>();
     node->func = std::move(func);
     node->value_index = value_index;
     node->type = type;
@@ -414,7 +411,7 @@ Stmt Block::make(Stmt first, Stmt rest) {
     internal_assert(first.defined()) << "Block of undefined\n";
     internal_assert(rest.defined()) << "Block of undefined\n";
 
-    NodePtr<Block> node = make_node<Block>();
+    std::shared_ptr<Block> node = std::make_shared<Block>();
 
     if (const Block *b = first.as<Block>()) {
         // Use a canonical block nesting order
@@ -443,22 +440,22 @@ Stmt IfThenElse::make(Expr condition, Stmt then_case, Stmt else_case) {
     internal_assert(condition.defined() && then_case.defined()) << "IfThenElse of undefined\n";
     // else_case may be null.
 
-    NodePtr<IfThenElse> node = make_node<IfThenElse>();
+    std::shared_ptr<IfThenElse> node = std::make_shared<IfThenElse>();
     node->condition = std::move(condition);
     node->then_case = std::move(then_case);
     node->else_case = std::move(else_case);
     return Stmt(node);
 }
 
-EXPORT Stmt Evaluate::make(Expr v) {
+Stmt Evaluate::make(Expr v) {
     internal_assert(v.defined()) << "Evaluate of undefined\n";
 
-    NodePtr<Evaluate> node = make_node<Evaluate>();
+    std::shared_ptr<Evaluate> node = std::make_shared<Evaluate>();
     node->value = v;
     return Stmt(node);
 }
 
-EXPORT Expr Call::make(Type type, std::string name, Array<Expr> args, CallType call_type,
+Expr Call::make(Type type, std::string name, Array<Expr> args, CallType call_type,
                 FunctionRef func, int value_index) {
     for (size_t i = 0; i < args.size(); i++) {
         internal_assert(args[i].defined()) << "Call of undefined\n";
@@ -470,7 +467,7 @@ EXPORT Expr Call::make(Type type, std::string name, Array<Expr> args, CallType c
         }
     }
 
-    NodePtr<Call> node = make_node<Call>();
+    std::shared_ptr<Call> node = std::make_shared<Call>();
     node->type = type;
     node->name = std::move(name);
     node->args = std::move(args);
@@ -481,7 +478,7 @@ EXPORT Expr Call::make(Type type, std::string name, Array<Expr> args, CallType c
 }
 
 VarExpr Variable::make(Type type, std::string name_hint) {
-    NodePtr<Variable> node = make_node<Variable>();
+    std::shared_ptr<Variable> node = std::make_shared<Variable>();
     node->type = type;
     node->name_hint = std::move(name_hint);
     return VarExpr(node);
@@ -505,7 +502,7 @@ Expr Shuffle::make(Array<Expr> vectors,
               << "Shuffle vector index out of range: " << i << "\n";
     }
 
-    NodePtr<Shuffle> node = make_node<Shuffle>();
+    std::shared_ptr<Shuffle> node = std::make_shared<Shuffle>();
     node->type = element_ty.with_lanes((int)indices.size());
     node->vectors = std::move(vectors);
     node->indices = std::move(indices);
@@ -642,49 +639,49 @@ bool Shuffle::is_extract_element() const {
     return indices.size() == 1;
 }
 
-template<> EXPORT void ExprNode<IntImm>::accept(IRVisitor *v, const Expr &e) const { v->visit((const IntImm *)this, e); }
-template<> EXPORT void ExprNode<UIntImm>::accept(IRVisitor *v, const Expr &e) const { v->visit((const UIntImm *)this, e); }
-template<> EXPORT void ExprNode<FloatImm>::accept(IRVisitor *v, const Expr &e) const { v->visit((const FloatImm *)this, e); }
-template<> EXPORT void ExprNode<StringImm>::accept(IRVisitor *v, const Expr &e) const { v->visit((const StringImm *)this, e); }
-template<> EXPORT void ExprNode<Cast>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Cast *)this, e); }
-template<> EXPORT void ExprNode<Variable>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Variable *)this, e); }
-template<> EXPORT void ExprNode<Add>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Add *)this, e); }
-template<> EXPORT void ExprNode<Sub>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Sub *)this, e); }
-template<> EXPORT void ExprNode<Mul>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Mul *)this, e); }
-template<> EXPORT void ExprNode<Div>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Div *)this, e); }
-template<> EXPORT void ExprNode<Mod>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Mod *)this, e); }
-template<> EXPORT void ExprNode<Min>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Min *)this, e); }
-template<> EXPORT void ExprNode<Max>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Max *)this, e); }
-template<> EXPORT void ExprNode<EQ>::accept(IRVisitor *v, const Expr &e) const { v->visit((const EQ *)this, e); }
-template<> EXPORT void ExprNode<NE>::accept(IRVisitor *v, const Expr &e) const { v->visit((const NE *)this, e); }
-template<> EXPORT void ExprNode<LT>::accept(IRVisitor *v, const Expr &e) const { v->visit((const LT *)this, e); }
-template<> EXPORT void ExprNode<LE>::accept(IRVisitor *v, const Expr &e) const { v->visit((const LE *)this, e); }
-template<> EXPORT void ExprNode<GT>::accept(IRVisitor *v, const Expr &e) const { v->visit((const GT *)this, e); }
-template<> EXPORT void ExprNode<GE>::accept(IRVisitor *v, const Expr &e) const { v->visit((const GE *)this, e); }
-template<> EXPORT void ExprNode<And>::accept(IRVisitor *v, const Expr &e) const { v->visit((const And *)this, e); }
-template<> EXPORT void ExprNode<Or>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Or *)this, e); }
-template<> EXPORT void ExprNode<Not>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Not *)this, e); }
-template<> EXPORT void ExprNode<Select>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Select *)this, e); }
-template<> EXPORT void ExprNode<Load>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Load *)this, e); }
-template<> EXPORT void ExprNode<Ramp>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Ramp *)this, e); }
-template<> EXPORT void ExprNode<Broadcast>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Broadcast *)this, e); }
-template<> EXPORT void ExprNode<Call>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Call *)this, e); }
-template<> EXPORT void ExprNode<Let>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Let *)this, e); }
-template<> EXPORT void StmtNode<LetStmt>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const LetStmt *)this, s); }
-template<> EXPORT void StmtNode<AttrStmt>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const AttrStmt *)this, s); }
-template<> EXPORT void StmtNode<AssertStmt>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const AssertStmt *)this, s); }
-template<> EXPORT void StmtNode<ProducerConsumer>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const ProducerConsumer *)this, s); }
-template<> EXPORT void StmtNode<For>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const For *)this, s); }
-template<> EXPORT void StmtNode<Store>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Store *)this, s); }
-template<> EXPORT void StmtNode<Provide>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Provide *)this, s); }
-template<> EXPORT void StmtNode<Allocate>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Allocate *)this, s); }
-template<> EXPORT void StmtNode<Free>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Free *)this, s); }
-template<> EXPORT void StmtNode<Realize>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Realize *)this, s); }
-template<> EXPORT void StmtNode<Prefetch>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Prefetch *)this, s); }
-template<> EXPORT void StmtNode<Block>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Block *)this, s); }
-template<> EXPORT void StmtNode<IfThenElse>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const IfThenElse *)this, s); }
-template<> EXPORT void StmtNode<Evaluate>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Evaluate *)this, s); }
-template<> EXPORT void ExprNode<Shuffle>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Shuffle *)this, e); }
+template<> void ExprNode<IntImm>::accept(IRVisitor *v, const Expr &e) const { v->visit((const IntImm *)this, e); }
+template<> void ExprNode<UIntImm>::accept(IRVisitor *v, const Expr &e) const { v->visit((const UIntImm *)this, e); }
+template<> void ExprNode<FloatImm>::accept(IRVisitor *v, const Expr &e) const { v->visit((const FloatImm *)this, e); }
+template<> void ExprNode<StringImm>::accept(IRVisitor *v, const Expr &e) const { v->visit((const StringImm *)this, e); }
+template<> void ExprNode<Cast>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Cast *)this, e); }
+template<> void ExprNode<Variable>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Variable *)this, e); }
+template<> void ExprNode<Add>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Add *)this, e); }
+template<> void ExprNode<Sub>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Sub *)this, e); }
+template<> void ExprNode<Mul>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Mul *)this, e); }
+template<> void ExprNode<Div>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Div *)this, e); }
+template<> void ExprNode<Mod>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Mod *)this, e); }
+template<> void ExprNode<Min>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Min *)this, e); }
+template<> void ExprNode<Max>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Max *)this, e); }
+template<> void ExprNode<EQ>::accept(IRVisitor *v, const Expr &e) const { v->visit((const EQ *)this, e); }
+template<> void ExprNode<NE>::accept(IRVisitor *v, const Expr &e) const { v->visit((const NE *)this, e); }
+template<> void ExprNode<LT>::accept(IRVisitor *v, const Expr &e) const { v->visit((const LT *)this, e); }
+template<> void ExprNode<LE>::accept(IRVisitor *v, const Expr &e) const { v->visit((const LE *)this, e); }
+template<> void ExprNode<GT>::accept(IRVisitor *v, const Expr &e) const { v->visit((const GT *)this, e); }
+template<> void ExprNode<GE>::accept(IRVisitor *v, const Expr &e) const { v->visit((const GE *)this, e); }
+template<> void ExprNode<And>::accept(IRVisitor *v, const Expr &e) const { v->visit((const And *)this, e); }
+template<> void ExprNode<Or>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Or *)this, e); }
+template<> void ExprNode<Not>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Not *)this, e); }
+template<> void ExprNode<Select>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Select *)this, e); }
+template<> void ExprNode<Load>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Load *)this, e); }
+template<> void ExprNode<Ramp>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Ramp *)this, e); }
+template<> void ExprNode<Broadcast>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Broadcast *)this, e); }
+template<> void ExprNode<Call>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Call *)this, e); }
+template<> void ExprNode<Let>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Let *)this, e); }
+template<> void StmtNode<LetStmt>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const LetStmt *)this, s); }
+template<> void StmtNode<AttrStmt>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const AttrStmt *)this, s); }
+template<> void StmtNode<AssertStmt>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const AssertStmt *)this, s); }
+template<> void StmtNode<ProducerConsumer>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const ProducerConsumer *)this, s); }
+template<> void StmtNode<For>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const For *)this, s); }
+template<> void StmtNode<Store>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Store *)this, s); }
+template<> void StmtNode<Provide>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Provide *)this, s); }
+template<> void StmtNode<Allocate>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Allocate *)this, s); }
+template<> void StmtNode<Free>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Free *)this, s); }
+template<> void StmtNode<Realize>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Realize *)this, s); }
+template<> void StmtNode<Prefetch>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Prefetch *)this, s); }
+template<> void StmtNode<Block>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Block *)this, s); }
+template<> void StmtNode<IfThenElse>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const IfThenElse *)this, s); }
+template<> void StmtNode<Evaluate>::accept(IRVisitor *v, const Stmt &s) const { v->visit((const Evaluate *)this, s); }
+template<> void ExprNode<Shuffle>::accept(IRVisitor *v, const Expr &e) const { v->visit((const Shuffle *)this, e); }
 
 Call::ConstString Call::debug_to_file = "debug_to_file";
 Call::ConstString Call::reinterpret = "reinterpret";
@@ -726,6 +723,6 @@ Call::ConstString Call::bool_to_mask = "bool_to_mask";
 Call::ConstString Call::cast_mask = "cast_mask";
 Call::ConstString Call::select_mask = "select_mask";
 Call::ConstString Call::extract_mask_element = "extract_mask_element";
-Call::ConstString Call::size_of_halideir_buffer_t = "size_of_halideir_buffer_t";
+Call::ConstString Call::size_of_halide_buffer_t = "size_of_halide_buffer_t";
 }
 }

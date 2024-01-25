@@ -1,13 +1,9 @@
-#ifndef HALIDEIR_EXPR_H
-#define HALIDEIR_EXPR_H
+#ifndef HALIDE_EXPR_H
+#define HALIDE_EXPR_H
 
 /** \file
- * Base classes for Halide expressions (\ref HalideIR::Expr) and statements (\ref HalideIR::Internal::Stmt)
+ * Base classes for Halide expressions (\ref Halide::Expr) and statements (\ref Halide::Internal::Stmt)
  */
-#include <tvm/node/node.h>
-#include <tvm/node/memory.h>
-#include <tvm/node/ir_functor.h>
-#include <tvm/node/container.h>
 
 #include <string>
 #include <vector>
@@ -17,20 +13,16 @@
 #include "base/Float16.h"
 #include "base/Type.h"
 #include "base/Util.h"
+#include "tvm/node.h"
+#include "tvm/ir_functor.h"
+#include "tvm/container.h"
 
-
-namespace HalideIR {
-using tvm::Node;
-using tvm::NodeRef;
-using tvm::Array;
-using tvm::NodePtr;
-using tvm::make_node;
-
-namespace IR {
-using tvm::AttrVisitor;
-}  // namespace IR
-
+namespace Halide {
 namespace Internal {
+
+using IR::Node;
+using IR::NodeRef;
+using IR::Array;
 
 struct Variable;
 class IRVisitor;
@@ -156,7 +148,7 @@ struct StmtNode : public BaseStmtNode {
    and dispatches visitors. */
 struct IRHandle : public NodeRef {
     IRHandle() {}
-    IRHandle(NodePtr<Node> p) : NodeRef(p) {}
+    IRHandle(std::shared_ptr<Node> p) : NodeRef(p) {}
 
     /** return internal content as IRNode */
     inline const IRNode* get() const {
@@ -177,7 +169,7 @@ struct Expr : public Internal::IRHandle {
     Expr() : Internal::IRHandle() {}
 
     /** Make an expression from a concrete expression node pointer (e.g. Add) */
-    explicit Expr(NodePtr<Node> n) : IRHandle(n) {}
+    explicit Expr(std::shared_ptr<IR::Node> n) : IRHandle(n) {}
 
     /** Make an expression representing numeric constants of various types. */
     // @{
@@ -244,13 +236,13 @@ struct ExprEqual {
  */
 struct VarExpr : public Expr {
     VarExpr() : Expr() { }
-    explicit VarExpr(NodePtr<Node> n) : Expr(n) {}
+    explicit VarExpr(std::shared_ptr<IR::Node> n) : Expr(n) {}
     /**
      * constructor from variable
      * Choose first have name then type, with default int32
      * because most VarExpr are used as looping variable.
      */
-    EXPORT explicit VarExpr(const std::string &name_hint, Type t = Int(32));
+    explicit VarExpr(const std::string &name_hint, Type t = Int(32));
     /** return internal content as Variable */
     inline const Internal::Variable* get() const;
     /** return internal variable pointer */
@@ -286,7 +278,7 @@ enum class ForType : int {
 /** A reference-counted handle to a statement node. */
 struct Stmt : public IRHandle {
     Stmt() : IRHandle() {}
-    Stmt(NodePtr<Node> n) : IRHandle(n) {}
+    Stmt(std::shared_ptr<IR::Node> n) : IRHandle(n) {}
 
     /** Dispatch to the correct visitor method for this node. E.g. if
      * this node is actually an Add node, then this will call
@@ -300,25 +292,25 @@ struct Stmt : public IRHandle {
 
 
 }  // namespace Internal
-}  // namespace HalideIR
+}  // namespace Halide
 
-namespace HalideIR {
+namespace Halide {
 namespace IR {
-using ::HalideIR::Expr;
+using ::Halide::Expr;
 using Internal::Stmt;
 }  // namespace IR
 }  // namespace Stmt
 
 namespace std {
 template <>
-struct hash<::HalideIR::Expr> {
-  std::size_t operator()(const ::HalideIR::Expr& k) const {
+struct hash<::Halide::Expr> {
+  std::size_t operator()(const ::Halide::Expr& k) const {
     return k.hash();
   }
 };
 template <>
-struct hash<::HalideIR::Internal::Stmt> {
-  std::size_t operator()(const ::HalideIR::Internal::Stmt& k) const {
+struct hash<::Halide::Internal::Stmt> {
+  std::size_t operator()(const ::Halide::Internal::Stmt& k) const {
     return k.hash();
   }
 };

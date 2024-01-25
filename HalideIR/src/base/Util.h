@@ -7,8 +7,8 @@
 #include <assert.h>
 #endif
 
-#ifndef HALIDEIR_UTIL_H
-#define HALIDEIR_UTIL_H
+#ifndef HALIDE_UTIL_H
+#define HALIDE_UTIL_H
 
 /** \file
  * Various utility functions used internally Halide. */
@@ -20,14 +20,14 @@
 #include <cstring>
 
 // by default, the symbol EXPORT does nothing. In windows dll builds we can define it to __declspec(dllexport)
-#if defined(_WIN32)
+#if defined(_WIN32) && defined(Halide_SHARED)
 #ifdef Halide_EXPORTS
 #define EXPORT __declspec(dllexport)
 #else
 #define EXPORT __declspec(dllimport)
 #endif
 #else
-#define EXPORT __attribute__((visibility("default")))
+#define EXPORT
 #endif
 
 // If we're in user code, we don't want certain functions to be inlined.
@@ -46,7 +46,7 @@
 #pragma comment(linker, "/STACK:8388608,1048576")
 #endif
 
-namespace HalideIR {
+namespace Halide {
 namespace Internal {
 
 /** An aggressive form of reinterpret cast used for correct type-punning. */
@@ -130,7 +130,7 @@ bool mul_would_overflow(int bits, int64_t a, int64_t b);
 // @}
 
 // Wrappers for some C++14-isms that are useful and trivially implementable
-// in C++11; these are defined in the HalideIR::Internal namespace. If we
+// in C++11; these are defined in the Halide::Internal namespace. If we
 // are compiling under C++14 or later, we just use the standard implementations
 // rather than our own.
 #if __cplusplus >= 201402L
@@ -184,6 +184,6 @@ using make_index_sequence = make_integer_sequence<size_t, N>;
 #endif
 
 }  // namespace Internal
-}  // namespace HalideIR
+}  // namespace Halide
 
 #endif

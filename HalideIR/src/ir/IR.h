@@ -1,8 +1,8 @@
-#ifndef HALIDEIR_IR_H
-#define HALIDEIR_IR_H
+#ifndef HALIDE_IR_H
+#define HALIDE_IR_H
 
 /** \file
- * Subtypes for Halide expressions (\ref HalideIR::Expr) and statements (\ref HalideIR::Internal::Stmt)
+ * Subtypes for Halide expressions (\ref Halide::Expr) and statements (\ref Halide::Internal::Stmt)
  */
 
 #include <string>
@@ -16,7 +16,7 @@
 #include "Range.h"
 #include "FunctionBase.h"
 
-namespace HalideIR {
+namespace Halide {
 namespace Internal {
 
 using IR::FunctionRef;
@@ -36,7 +36,7 @@ using Region = Array<Range>;
 struct IntImm : public ExprNode<IntImm> {
     int64_t value;
 
-    EXPORT static Expr make(Type t, int64_t value);
+    static Expr make(Type t, int64_t value);
 
     void VisitAttrs(IR::AttrVisitor* v) final {
         v->Visit("dtype", &type);
@@ -50,7 +50,7 @@ struct IntImm : public ExprNode<IntImm> {
 struct UIntImm : public ExprNode<UIntImm> {
     uint64_t value;
 
-    EXPORT static Expr make(Type t, uint64_t value);
+    static Expr make(Type t, uint64_t value);
 
     void VisitAttrs(IR::AttrVisitor* v) final {
         v->Visit("dtype", &type);
@@ -64,7 +64,7 @@ struct UIntImm : public ExprNode<UIntImm> {
 struct FloatImm : public ExprNode<FloatImm> {
     double value;
 
-    EXPORT static Expr make(Type t, double value);
+    static Expr make(Type t, double value);
 
     void VisitAttrs(IR::AttrVisitor* v) final {
         v->Visit("dtype", &type);
@@ -78,7 +78,7 @@ struct FloatImm : public ExprNode<FloatImm> {
 struct StringImm : public ExprNode<StringImm> {
     std::string value;
 
-    EXPORT Expr static make(const std::string &val);
+    Expr static make(const std::string &val);
     void VisitAttrs(IR::AttrVisitor* v) final {
         v->Visit("dtype", &type);
         v->Visit("value", &value);
@@ -109,7 +109,7 @@ struct BinaryOpNode : public ExprNode<T> {
        internal_assert(a.defined()) << "BinaryOp of undefined\n";
        internal_assert(b.defined()) << "BinaryOp of undefined\n";
        internal_assert(a.type() == b.type()) << "BinaryOp of mismatched types\n";
-       NodePtr<T> node = make_node<T>();
+       std::shared_ptr<T> node = std::make_shared<T>();
        node->type = a.type();
        node->a = std::move(a);
        node->b = std::move(b);
@@ -175,7 +175,7 @@ struct CmpOpNode : public ExprNode<T> {
         internal_assert(a.defined()) << "CmpOp of undefined\n";
         internal_assert(b.defined()) << "CmpOp of undefined\n";
         internal_assert(a.type() == b.type()) << "BinaryOp of mismatched types\n";
-        NodePtr<T> node = make_node<T>();
+        std::shared_ptr<T> node = std::make_shared<T>();
         node->type = Bool(a.type().lanes());
         node->a = std::move(a);
         node->b = std::move(b);
@@ -530,7 +530,7 @@ struct Allocate : public StmtNode<Allocate> {
     // returns non-nullptr, the function named be free_function is
     // guaranteed to be called. The free function signature must match
     // that of the code generator dependent free (typically
-    // halideir_free). If free_function is left empty, code generator
+    // halide_free). If free_function is left empty, code generator
     // default will be called.
     Expr new_expr;
     std::string free_function;
@@ -720,7 +720,7 @@ struct Call : public ExprNode<Call> {
         cast_mask,
         select_mask,
         extract_mask_element,
-        size_of_halideir_buffer_t;
+        size_of_halide_buffer_t;
     // If it's a call to another halide function, this call node holds
     // onto a pointer to that function for the purposes of reference
     // counting only. Self-references in update definitions do not
@@ -753,8 +753,7 @@ struct Call : public ExprNode<Call> {
      * sqrt. If in doubt, don't mark a Call node as pure. */
     bool is_pure() const {
         return (call_type == PureExtern ||
-                call_type == PureIntrinsic ||
-                call_type == Halide);
+                call_type == PureIntrinsic);
     }
 
     bool is_intrinsic(ConstString intrin_name) const {

@@ -1,5 +1,5 @@
-#ifndef HALIDEIR_INTERVAL_H
-#define HALIDEIR_INTERVAL_H
+#ifndef HALIDE_INTERVAL_H
+#define HALIDE_INTERVAL_H
 
 /** \file
  * Defines the Interval class
@@ -7,7 +7,7 @@
 
 #include "ir/Expr.h"
 
-namespace HalideIR {
+namespace Halide {
 namespace Internal {
 
 /** A class to represent ranges of Exprs. Can be unbounded above or below. */

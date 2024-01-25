@@ -1,5 +1,5 @@
-#ifndef HALIDEIR_IR_MUTATOR_H
-#define HALIDEIR_IR_MUTATOR_H
+#ifndef HALIDE_IR_MUTATOR_H
+#define HALIDE_IR_MUTATOR_H
 
 /** \file
  * Defines a base class for passes over the IR that modify it
@@ -8,7 +8,7 @@
 #include "IRVisitor.h"
 #include <unordered_map>
 
-namespace HalideIR {
+namespace Halide {
 namespace Internal {
 
 /** A base class for passes over the IR which modify it

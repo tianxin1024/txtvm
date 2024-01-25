@@ -3,13 +3,13 @@
  * \file Range.h
  * \brief The Range data structure
  */
-#ifndef HALIDEIR_IR_RANGE_H_
-#define HALIDEIR_IR_RANGE_H_
+#ifndef HALIDE_IR_RANGE_H_
+#define HALIDE_IR_RANGE_H_
 
 #include <memory>
 #include "Expr.h"
 
-namespace HalideIR {
+namespace Halide {
 namespace IR {
 
 // Internal node container of Range
@@ -20,7 +20,7 @@ class Range : public NodeRef {
  public:
   /*! \brief constructor */
   Range() {}
-  Range(NodePtr<Node> n) : NodeRef(n) {}
+  Range(std::shared_ptr<Node> n) : NodeRef(n) {}
   /*!
    * \brief access the internal node container
    * \return the pointer to the internal node container
@@ -68,10 +68,7 @@ inline const RangeNode* Range::operator->() const {
 inline Range Range::make_by_min_extent(Expr min, Expr extent) {
   internal_assert(min.type() == extent.type())
       << "Region min and extent must have same type\n";
-  NodePtr<RangeNode> n = make_node<RangeNode>();
-  n->min = min;
-  n->extent = extent;
-  return Range(n);
+  return Range(std::make_shared<RangeNode>(min, extent));
 }
 
 // overload print function
@@ -81,6 +78,6 @@ inline std::ostream& operator<<(std::ostream &os, const Range& r) {  // NOLINT(*
 }
 
 }  // namespace IR
-}  // namespace HalideIR
+}  // namespace Halide
 
-#endif  // HALIDEIR_IR_H_
+#endif  // HALIDE_IR_H_

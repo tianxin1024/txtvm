@@ -1,29 +1,24 @@
 /*!
- *  Copyright (c) 2018 by Contributors
- * \file tvm/node/node.h
- * \brief Node system data structure.
+ *  Copyright (c) 2016 by Contributors
+ * \file node.h
+ * \brief Defines the Node data structures.
  */
-#ifndef HALIDEIR_TVM_NODE_NODE_H_
-#define HALIDEIR_TVM_NODE_NODE_H_
+#ifndef TVM_NODE_H_
+#define TVM_NODE_H_
 
 #include <string>
 #include <vector>
+#include <memory>
 #include <type_traits>
 #include "base/Type.h"
-#include "node_base.h"
 
+/** namespace of tvm base code */
 namespace tvm {
-using HalideIR::Type;
+
+using Halide::Type;
 // forward declaration
 class Node;
 class NodeRef;
-
-namespace runtime {
-// forward declaration
-class NDArray;
-// forward declaration
-class Object;
-}  // namespace runtime
 
 /*!
  * \brief Visitor class to each node content.
@@ -32,7 +27,6 @@ class Object;
 class EXPORT AttrVisitor {
  public:
 //! \cond Doxygen_Suppress
-  virtual ~AttrVisitor() = default;
   virtual void Visit(const char* key, double* value) = 0;
   virtual void Visit(const char* key, int64_t* value) = 0;
   virtual void Visit(const char* key, uint64_t* value) = 0;
@@ -42,8 +36,6 @@ class EXPORT AttrVisitor {
   virtual void Visit(const char* key, void** value) = 0;
   virtual void Visit(const char* key, Type* value) = 0;
   virtual void Visit(const char* key, NodeRef* value) = 0;
-  virtual void Visit(const char* key, runtime::NDArray* value) = 0;
-  virtual void Visit(const char* key, runtime::Object* value) = 0;
   template<typename ENum,
            typename = typename std::enable_if<std::is_enum<ENum>::value>::type>
   void Visit(const char* key, ENum* ptr) {
@@ -58,7 +50,7 @@ class EXPORT AttrVisitor {
  * \brief base class of node container in DSL AST.
  *  All object's internal is stored as std::shared_ptr<Node>
  */
-class EXPORT Node : public NodeBase {
+class EXPORT Node {
  public:
   /*! \brief virtual destructor */
   virtual ~Node() {}
@@ -104,17 +96,13 @@ class EXPORT Node : public NodeBase {
    */
   template<typename T>
   inline bool is_type() const;
-  /*!
-   * \brief Get a NodePtr that holds reference to this Node.
-   * \return the NodePtr
-   */
-  inline NodePtr<Node> GetNodePtr() const;
   // node ref can see this
   friend class NodeRef;
   static constexpr const char* _type_key = "Node";
 };
 
-/*! \brief Base class of all node reference object */
+
+/*! \brief base class of all node reference object */
 class NodeRef {
  public:
   /*! \brief type indicate the container type */
@@ -165,45 +153,14 @@ class NodeRef {
    */
   template<typename T>
   inline const T *as() const;
-  /*!
-   * \brief A more powerful version of as that also works with
-   *  intermediate base types.
-   * \tparam T the target type, must be subtype of IRNode
-   */
-  template<typename T>
-  inline const T *as_derived() const;
+
   /*! \brief default constructor */
   NodeRef() = default;
-  explicit NodeRef(NodePtr<Node> node) : node_(node) {}
+  explicit NodeRef(std::shared_ptr<Node> node) : node_(node) {}
+
   /*! \brief the internal node object, do not touch  */
-  NodePtr<Node> node_;
+  std::shared_ptr<Node> node_;
 };
-
-/*!
- * \brief Get a reference type from a Node ptr type
- *
- *  It is always important to get a reference type
- *  if we want to return a value as reference or keep
- *  the node alive beyond the scope of the function.
- *
- * \param ptr The node pointer
- * \tparam RefType The reference type
- * \tparam NodeType The node type
- * \return The corresponding RefType
- */
-template <typename RefType, typename NodeType>
-inline RefType GetRef(const NodeType* ptr);
-
-/*!
- * \brief Downcast a base reference type to a more specific type.
- *
- * \param ref The inptut reference
- * \return The corresponding SubRef.
- * \tparam SubRef The target specific reference type.
- * \tparam BaseRef the current reference type.
- */
-template <typename SubRef, typename BaseRef>
-inline SubRef Downcast(BaseRef ref);
 
 /*!
  * \brief helper macro to declare type information in a base node.
@@ -234,39 +191,17 @@ inline SubRef Downcast(BaseRef ref);
 
 // implementations of inline functions after this
 template<typename T>
-inline bool Node::derived_from() const {
-  // use static field so query only happens once.
-  static uint32_t type_id = Node::TypeKey2Index(T::_type_key);
-  return this->_DerivedFrom(type_id);
-}
-
-
-template<typename T>
 inline bool Node::is_type() const {
   // use static field so query only happens once.
   static uint32_t type_id = Node::TypeKey2Index(T::_type_key);
   return type_id == this->type_index();
 }
 
-
-inline NodePtr<Node> Node::GetNodePtr() const {
-  return NodePtr<Node>(const_cast<Node*>(this));
-}
-
-template <typename RefType, typename NodeType>
-inline RefType GetRef(const NodeType* ptr) {
-  static_assert(std::is_base_of<typename RefType::ContainerType, NodeType>::value,
-                "Can only cast to the ref of same container type");
-  return RefType(ptr->GetNodePtr());
-}
-
-template <typename SubRef, typename BaseRef>
-inline SubRef Downcast(BaseRef ref) {
-  CHECK(ref->template is_type<typename SubRef::ContainerType>() ||
-        ref->template derived_from<typename SubRef::ContainerType>())
-      << "Downcast from " << ref->type_key() << " to "
-      << SubRef::ContainerType::_type_key << " failed.";
-  return SubRef(std::move(ref.node_));
+template<typename T>
+inline bool Node::derived_from() const {
+  // use static field so query only happens once.
+  static uint32_t type_id = Node::TypeKey2Index(T::_type_key);
+  return this->_DerivedFrom(type_id);
 }
 
 inline const Node* NodeRef::get() const {
@@ -302,7 +237,7 @@ inline size_t NodeRef::hash() const {
 }
 
 inline uint32_t NodeRef::type_index() const {
-  CHECK(node_.get() != nullptr)
+  internal_assert(node_.get() != nullptr)
       << "null type";
   return get()->type_index();
 }
@@ -311,15 +246,6 @@ template<typename T>
 inline const T* NodeRef::as() const {
   const Node* ptr = static_cast<const Node*>(get());
   if (ptr && ptr->is_type<T>()) {
-    return static_cast<const T*>(ptr);
-  }
-  return nullptr;
-}
-
-template<typename T>
-inline const T* NodeRef::as_derived() const {
-  const Node* ptr = static_cast<const Node*>(get());
-  if (ptr && (ptr->is_type<T>() || ptr->derived_from<T>())) {
     return static_cast<const T*>(ptr);
   }
   return nullptr;
@@ -339,4 +265,26 @@ struct NodeEqual {
   }
 };
 }  // namespace tvm
-#endif  // HALIDEIR_TVM_NODE_NODE_H_
+
+// expose the data structure to HalideIR
+namespace Halide {
+namespace IR {
+
+using tvm::Node;
+using tvm::NodeRef;
+using tvm::AttrVisitor;
+
+}  // namespace IR
+}  // namespace Halide
+
+namespace std {
+template <>
+struct hash<::tvm::NodeRef> {
+  std::size_t operator()(const ::tvm::NodeRef& k) const {
+    return k.hash();
+  }
+};
+
+}  // namespace std
+
+#endif  // TVM_NODE_H_

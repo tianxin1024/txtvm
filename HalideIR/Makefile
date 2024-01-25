@@ -1,9 +1,7 @@
 DMLC_CORE_PATH ?= ../dmlc-core
-DLPACK_INCLUDE_PATH ?= ../dlpack/include
-
 LDFLAGS = -pthread -lm
-CFLAGS =  -std=c++11 -Wall -O0 -g\
-	 -Iinclude -I${DMLC_CORE_PATH}/include -I../include -I${DLPACK_INCLUDE_PATH} -Isrc -fPIC -fvisibility=hidden
+CFLAGS =  -std=c++11 -Wall -O2\
+	 -Iinclude -I${DMLC_CORE_PATH}/include -Isrc -fPIC
 
 ifdef no_rtti
 	CFLAGS += -fno-rtti
@@ -15,7 +13,7 @@ endif
 CCSUFFIX=cpp
 
 all: lib/libHalideIR.a lib/libHalideIR.so
-SRC = $(wildcard src/*.$(CCSUFFIX) src/*/*.$(CCSUFFIX) src/*/*/*.$(CCSUFFIX))
+SRC = $(wildcard src/*.$(CCSUFFIX) src/*/*.$(CCSUFFIX))
 ALL_OBJ = $(patsubst src/%.$(CCSUFFIX), build/%.o, $(SRC))
 ALL_DEP = $(ALL_OBJ)
 

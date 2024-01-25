@@ -6,13 +6,13 @@
  *  This is used because Function is a high level object that can contain schedule,
  *  which could have many variations. Removing FunctionContent dep from IR makes IR minimum.
  */
-#ifndef HALIDEIR_IR_FUNCTION_BASE_H_
-#define HALIDEIR_IR_FUNCTION_BASE_H_
+#ifndef HALIDE_IR_FUNCTION_BASE_H_
+#define HALIDE_IR_FUNCTION_BASE_H_
 
 #include <memory>
 #include "Expr.h"
 
-namespace HalideIR {
+namespace Halide {
 namespace IR {
 
 // Internal node container of Range
@@ -23,7 +23,7 @@ class FunctionRef : public NodeRef {
  public:
   /*! \brief constructor */
   FunctionRef() {}
-  FunctionRef(NodePtr<Node> n) : NodeRef(n) {}
+  FunctionRef(std::shared_ptr<Node> n) : NodeRef(n) {}
   /*!
    * \brief access the internal node container
    * \return the pointer to the internal node container
@@ -46,6 +46,6 @@ inline const FunctionBaseNode* FunctionRef::operator->() const {
 }
 
 }  // namespace IR
-}  // namespace HalideIR
+}  // namespace Halide
 
-#endif  // HALIDEIR_IR_FUNCTION_BASE_H_
+#endif  // HALIDE_IR_FUNCTION_BASE_H_

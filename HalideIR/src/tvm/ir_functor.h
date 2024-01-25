@@ -1,18 +1,17 @@
 /*!
- *  Copyright (c) 2018 by Contributors
- * \file tvm/node/ir_functor.h
+ *  Copyright (c) 2016 by Contributors
+ * \file ir_functor.h
  * \brief Defines the IRFunctor data structures.
  */
-#ifndef HALIDEIR_TVM_NODE_IR_FUNCTOR_H_
-#define HALIDEIR_TVM_NODE_IR_FUNCTOR_H_
+#ifndef TVM_IR_FUNCTOR_H_
+#define TVM_IR_FUNCTOR_H_
 
-#include <dmlc/logging.h>
 #include <string>
 #include <vector>
-#include <memory>
 #include <type_traits>
 #include <functional>
-#include "node.h"
+#include "base/Debug.h"
+#include "./node.h"
 
 namespace tvm {
 /*!
@@ -69,8 +68,8 @@ class IRFunctor<R(const NodeRef& n, Args...)> {
    */
   inline R operator()(const NodeRef& n, Args... args) const {
     uint32_t type_index = n.type_index();
-    CHECK(type_index < func_.size() &&
-          func_[type_index] != nullptr)
+    internal_assert(type_index < func_.size() &&
+                    func_[type_index] != nullptr)
         << "IRFunctor calls un-registered function on type "
         << Node::TypeIndex2Key(type_index);
     return func_[type_index](n, std::forward<Args>(args)...);
@@ -87,7 +86,7 @@ class IRFunctor<R(const NodeRef& n, Args...)> {
     if (func_.size() <= tindex) {
       func_.resize(tindex + 1, nullptr);
     }
-    CHECK(func_[tindex] == nullptr)
+    internal_assert(func_[tindex] == nullptr)
         << "Dispatch for " << Node::TypeIndex2Key(tindex)
         << " is already set";
     func_[tindex] = f;
@@ -108,19 +107,6 @@ class IRFunctor<R(const NodeRef& n, Args...)> {
                std::forward<Args>(args)...);
     };
     return this->set_dispatch<TNode>(fun);
-  }
-  /*!
-  * \brief unset the dispacher for type TNode
-  *
-  * \tparam TNode the type of Node to be dispatched.
-  * \return reference to self.
-  */
-  template<typename TNode>
-  inline TSelf& clear_dispatch() {  // NOLINT(*)
-    uint32_t tindex = Node::TypeKey2Index(TNode::_type_key);
-    CHECK_LT(tindex, func_.size()) << "clear_dispatch: index out of range";
-    func_[tindex] = nullptr;
-    return *this;
   }
 };
 
@@ -160,7 +146,7 @@ class IRFunctor<R(const NodeRef& n, Args...)> {
  *  };
  *
  *  // in cpp/cc file
- *  IRPrinter::FType& IRPrinter::vtable() { // NOLINT(*)
+ *  IRPrinter::FType& IRPrinter::vtable() { // NOLINT(*0
  *    static FType inst; return inst;
  *  }
  *
@@ -181,84 +167,6 @@ class IRFunctor<R(const NodeRef& n, Args...)> {
   TVM_STR_CONCAT(TVM_REGISTER_VAR_DEF(ClsName), __COUNTER__)  =      \
                               ClsName::FField()
 
- /*!
- * \brief A container for a list of callbacks. All callbacks are invoked when
- * the object is destructed.
- */
-class IRFunctorCleanList {
- public:
-  ~IRFunctorCleanList() {
-    for (auto &f : clean_items) {
-      f();
-    }
-  }
-
-  void append(std::function<void()> func) {
-    clean_items.push_back(func);
-  }
-
- private:
-  std::vector< std::function<void()> > clean_items;
-};
-
-/*!
-* \brief A wrapper around IRFunctor that will record calls to set_dispatch
-* and make a corresponding call to clear_dispatch when the last copy of
-* the IRFunctorStaticRegistry is destructed. When assigned to a static variable,
-* this can be used by NNVM and other libraries to unregister callbacks when
-* the library is unloaded. This prevents crashes when the underlying IRFunctor
-* is destructed as it will no longer contain std::function instances allocated
-* by a library that has been unloaded.
-*/
-template<typename FType>
-class IRFunctorStaticRegistry;
-
-template<typename R, typename ...Args>
-class IRFunctorStaticRegistry<R(const NodeRef& n, Args...)> {
- private:
-  IRFunctor<R(const NodeRef& n, Args...)> *irf_;
-  std::shared_ptr<IRFunctorCleanList> free_list;
-
-  using TSelf = IRFunctorStaticRegistry<R(const NodeRef& n, Args...)>;
-
- public:
-  IRFunctorStaticRegistry(IRFunctor<R(const NodeRef& n, Args...)> *irf) {
-    irf_ = irf;
-    free_list = std::make_shared<IRFunctorCleanList>();
-  }
-
-  template<typename TNode>
-  inline TSelf& set_dispatch(std::function<R(const TNode* n, Args...)> f) {  // NOLINT(*)
-    irf_->template set_dispatch<TNode>(f);
-    auto irf_copy = irf_;
-    free_list.get()->append([irf_copy] {
-      irf_copy->template clear_dispatch<TNode>();
-      });
-    return *this;
-  }
-};
-
-/*!
-* \brief Helper function for constructing an IRFunctorStaticRegistry. This allows
-* the compiler to deduce the template types.
-*/
-template<typename R, typename ...Args>
-IRFunctorStaticRegistry<R(const NodeRef& n, Args...)> MakeIRFunctorStaticRegistry(
-  IRFunctor<R(const NodeRef& n, Args...)> *irf) {
-  return IRFunctorStaticRegistry<R(const NodeRef& n, Args...)>(irf);
-}
-
-#define TVM_AUTO_REGISTER_VAR_DEF(ClsName)                           \
-  static TVM_ATTRIBUTE_UNUSED auto __make_functor ## _ ## ClsName
-
-/*!
-* \brief Macro to set IRFunctor dispatch in a global static field using an IRFunctorStaticRegistry.
-* Usage is exactly the same as TVM_STATIC_IR_FUNCTOR. Libraries should use this instead of
-* TVM_STATIC_IR_FUNCTOR.
-*/
-#define TVM_STATIC_IR_FUNCTOR_REGISTER(ClsName, FField)                  \
-  TVM_STR_CONCAT(TVM_AUTO_REGISTER_VAR_DEF(ClsName), __COUNTER__)  = \
-                        MakeIRFunctorStaticRegistry(&ClsName::FField())
-
 }  // namespace tvm
-#endif  // HALIDEIR_TVM_NODE_IR_FUNCTOR_H_
+
+#endif  // TVM_IR_FUNCTOR_H_

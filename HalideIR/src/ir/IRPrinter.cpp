@@ -4,7 +4,7 @@
 #include "IRPrinter.h"
 #include "IROperator.h"
 
-namespace HalideIR {
+namespace Halide {
 
 using std::ostream;
 using std::vector;
@@ -83,14 +83,9 @@ IRPrinter::IRPrinter(ostream &s) : stream(s), indent(0) {
 void IRPrinter::print(const NodeRef& ir) {
     static const FType& f = vtable();
     if (!ir.defined()) {
-        stream << "(nullptr)";
+        stream << "(undefined)";
     } else {
-        if (f.can_dispatch(ir)) {
-            f(ir, this);
-        } else {
-            // default value, output type key and addr.
-            stream << ir->type_key() << "(" << ir.get() << ")";
-        }
+        f(ir, this);
     }
 }
 
@@ -640,19 +635,6 @@ TVM_STATIC_IR_FUNCTOR(IRPrinter, vtable)
       }
       p->print(tvm::NodeRef(it->first));
       p->stream << ": ";
-      p->print(tvm::NodeRef(it->second));
-    }
-    p->stream << '}';
-});
-
-TVM_STATIC_IR_FUNCTOR(IRPrinter, vtable)
-.set_dispatch<tvm::StrMapNode>([](const tvm::StrMapNode *op, IRPrinter *p) {
-    p->stream << '{';
-    for (auto it = op->data.begin(); it != op->data.end(); ++it) {
-      if (it != op->data.begin()) {
-        p->stream << ", ";
-      }
-      p->stream << '\"' << it->first << "\": ";
       p->print(tvm::NodeRef(it->second));
     }
     p->stream << '}';

@@ -1,13 +1,13 @@
 /*!
- *  Copyright (c) 2018 by Contributors
+ *  Copyright (c) 2016 by Contributors
  *  Implementation of IR Node API
- * \file node.cc
+ * \file node.cpp
  */
-#include <tvm/node/node.h>
 #include <memory>
 #include <atomic>
 #include <mutex>
 #include <unordered_map>
+#include "./node.h"
 
 namespace tvm {
 
@@ -28,15 +28,15 @@ struct TypeManager {
 };
 }  // namespace
 
-EXPORT const bool Node::_DerivedFrom(uint32_t tid) const {
+const bool Node::_DerivedFrom(uint32_t tid) const {
   static uint32_t tindex = TypeKey2Index(Node::_type_key);
   return tid == tindex;
 }
 
 // this is slow, usually caller always hold the result in a static variable.
-EXPORT uint32_t Node::TypeKey2Index(const char* key) {
+uint32_t Node::TypeKey2Index(const char* key) {
   TypeManager *t = TypeManager::Global();
-  std::lock_guard<std::mutex> lock(t->mutex);
+  std::lock_guard<std::mutex>(t->mutex);
   std::string skey = key;
   auto it = t->key2index.find(skey);
   if (it != t->key2index.end()) {
@@ -48,9 +48,9 @@ EXPORT uint32_t Node::TypeKey2Index(const char* key) {
   return tid;
 }
 
-EXPORT const char* Node::TypeIndex2Key(uint32_t index) {
+const char* Node::TypeIndex2Key(uint32_t index) {
   TypeManager *t = TypeManager::Global();
-  std::lock_guard<std::mutex> lock(t->mutex);
+  std::lock_guard<std::mutex>(t->mutex);
   internal_assert(index != 0);
   return t->index2key.at(index - 1).c_str();
 }
