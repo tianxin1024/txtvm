@@ -8,8 +8,7 @@
 
 namespace tvm {
 
-class VarNode : public ExprNode {
-public:
+struct VarNode : public ExprNode {
     std::string name;
     VarNode() {
         node_type_ = kVarNode;
@@ -25,8 +24,7 @@ public:
     }
 };
 
-class IntNode : public ExprNode {
-public:
+struct IntNode : public ExprNode {
     int64_t value;
     IntNode() {
         node_type_ = kIntNode;
@@ -41,15 +39,14 @@ public:
     }
 };
 
-class FloatNode : public ExprNode {
-public:
+struct FloatNode : public ExprNode {
     double value;
     FloatNode() {
         node_type_ = kFloatNode;
         dtype_ = kFloat32;
     }
     const char* type_key() const override {
-        return "IntNode";
+        return "FloatNode";
     }
     void VisitAttrs(AttrVisitor* visitor) override {
         visitor->Visit("value", &value);
@@ -58,8 +55,7 @@ public:
 };
 
 
-class UnaryOpNode : public ExprNode {
-public:
+struct UnaryOpNode : public ExprNode {
     const UnaryOp* op;
     Expr src;
     UnaryOpNode() {
@@ -91,7 +87,6 @@ public:
 };
 
 struct BinaryOpNode : public ExprNode {
-public:
     const BinaryOp* op;
     Expr lhs;
     Expr rhs;
@@ -126,7 +121,6 @@ public:
 };
 
 struct ReduceNode : public ExprNode {
-public:
     const BinaryOp* op;
     Expr src;
     RDomain rdom;
@@ -158,7 +152,6 @@ public:
 };
 
 struct TensorReadNode : public ExprNode {
-public:
     Tensor tensor;
     Array<Expr> indices;
     TensorReadNode() {
@@ -188,7 +181,28 @@ public:
         fvisit("tensor", &tensor);
         fvisit("indices", &indices);
     }
+};
 
+struct BufferReadNode : public ExprNode {
+    Var buffer;
+    Expr offset;
+    BufferReadNode() {
+        node_type_ = kBufferReadNode;
+    }
+    const char* type_key() const override {
+        return "BufferReadNode";
+    }
+    void Verify() const override {
+        CHECK_EQ(dtype_, Ptr2DataType(buffer.dtype()));
+        CHECK_EQ(offset.dtype(), kInt32);
+    }
+    void VisitAttrs(AttrVisitor* visitor) override {
+        visitor->Visit("dtype", &dtype_);
+    }
+    void VisitNodeRefFields(FNodeRefVisit fvisit) override {
+        fvisit("buffer", &buffer);
+        fvisit("offset", &offset);
+    }
 
 };
 

@@ -8,18 +8,25 @@ namespace tvm {
 
 // forward declare Expr
 class Expr;
+class Var;
 
 template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type >
 inline Expr constant(T value);
 
+Expr IntConstant(int64_t value);
+
+Expr FloatCOnstant(double value);
+
+Expr BufferRead(Var buffer, Expr offset);
+
 
 class Expr : public NodeRef {
 public:
-    Expr() = default;
-    Expr(const Expr& other) = default;
-    Expr(Expr&& other) = default;
-    Expr& operator=(const Expr& other) = default;
-    Expr& operator=(Expr&& other) = default;
+    Expr() {}
+    // Expr(const Expr& other) = default;
+    // Expr(Expr&& other) = default;
+    // Expr& operator=(const Expr& other) = default;
+    // Expr& operator=(Expr&& other) = default;
 
     template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type >
     Expr(T value) {
@@ -55,6 +62,7 @@ public:
     DataType dtype_{kUnknown};
 };
 
+// implementation
 inline DataType Expr::dtype() const {
     return static_cast<const ExprNode*>(node_.get())->dtype_;
 }

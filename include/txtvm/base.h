@@ -16,11 +16,20 @@ class NodeRef;
 class UnaryOp;
 class BinaryOp;
 
+const int kPtrTypeMask = 16;
+
 enum DataType : int {
     kUnknown = 0,
     kInt32 = 1,
-    kFloat32 = 2
+    kFloat32 = 2,
+    kInt32Buffer = kInt32 | kPtrTypeMask,
+    kFloat32Buffer = kFloat32 | kPtrTypeMask
 };
+
+inline DataType Ptr2DataType(DataType ptr_type) {
+    CHECK_GE(ptr_type, kPtrTypeMask);
+    return static_cast<DataType>(ptr_type & (kPtrTypeMask - 1));
+}
 
 enum NodeType {
     // expr nodes
@@ -31,6 +40,7 @@ enum NodeType {
     kBinaryOpNode,
     kReduceNode,
     kTensorReadNode,
+    kBufferReadNode,
     // stmt nodes
     kStoreNode,
     kForRangeNode,
@@ -85,6 +95,7 @@ public:
     inline bool operator==(const NodeRef& other) const;
     inline bool operator!=(const NodeRef& other) const;
     inline size_t hash() const;
+    inline Node* node_ptr() const;
 
 protected:
     template<typename T, typename>
@@ -139,6 +150,10 @@ inline bool NodeRef::operator!=(const NodeRef& other) const {
 
 inline size_t NodeRef::hash() const {
     return std::hash<Node*>()(node_.get());
+}
+
+inline Node* NodeRef::node_ptr() const {
+    return node_.get();
 }
 
 } // end of namespace tvm

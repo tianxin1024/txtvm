@@ -24,4 +24,12 @@ Expr FloatConstant(double value) {
     return Expr(std::move(nptr));
 }
 
+Expr BufferRead(Var buffer, Expr offset) {
+    auto nptr = std::make_shared<BufferReadNode>();
+    nptr->buffer = std::move(buffer);
+    nptr->offset = std::move(offset);
+    nptr->Verify();
+    return Expr(std::move(nptr));
+}
+
 } // end of namespace tvm
