@@ -1,15 +1,17 @@
 export LDFLAGS = -pthread -lm
 export CFLAGS = -std=c++14 -Wall -O0 -g -Wno-unknown-pargmas -funroll-loops \
-	-Iinclude -Idmlc-core/include -fPIC
+	-Iinclude -Idmlc-core/include -IHalideIR/src -fPIC
 
 # specify tensor path
 .PHONY: clean all test
 
 all: lib/libtvm.a lib/libtvm.so
 
+LIB_HALIDE_IR = HalideIR/lib/libHalideIR.a
+
 SRC = $(wildcard src/*.cc src/*/*.cc)
 ALL_OBJ = $(patsubst src/%.cc, build/%.o, $(SRC))
-ALL_DEP = $(ALL_OBJ)
+ALL_DEP = $(ALL_OBJ) $(LIB_HALIDE_IR)
 
 include tests/cpp/unittest.mk
 

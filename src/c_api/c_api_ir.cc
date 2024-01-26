@@ -9,6 +9,32 @@ using namespace Halide::Internal;
 using ArgStack = const std::vector<APIVariantValue>;
 using RetValue = APIVariantValue;
 
+TVM_REGISTER_API(_Var)
+.set_body([](const ArgStack& args, RetValue *ret) {
+    *ret = Variable::make(args.at(1), args.at(0));
+});
+
+
+TVM_REGISTER_API(_make_For)
+.set_body([](const ArgStack& args,  RetValue *ret) {
+    *ret = For::make(args.at(0),
+                     args.at(1),
+                     args.at(2),
+                     static_cast<ForType>(args.at(3).operator int()),
+                     static_cast<Halide::DeviceAPI>(args.at(4).operator int()),
+                     args.at(5));
+});
+
+TVM_REGISTER_API(_make_Allocate)
+.set_body([](const ArgStack& args,  RetValue *ret) {
+    *ret = Allocate::make(args.at(0),
+                          args.at(1),
+                          args.at(2),
+                          args.at(3),
+                          args.at(4));
+});
+
+
 // make from two arguments
 #define REGISTER_MAKE1(Node)                                                 \
     TVM_REGISTER_API(_make_## Node)                                          \
