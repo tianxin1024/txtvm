@@ -186,15 +186,15 @@ int TVMNodeGetAttr(NodeHandle handle,
     TVMAPIThreadLocalEntry *ret = TVMAPIThreadLocalStore::Get();
     API_BEGIN();
     ret->ret_value.type_id = kNull;
-    APIAttrGetter getter;
-    getter.skey = key;
-    getter.ret = &(ret->ret_value);
+    APIAttrGetter *getter;
+    getter->skey = key;
+    getter->ret = &(ret->ret_value);
     TVMAPINode* tnode = static_cast<TVMAPINode*>(handle);
-    if (getter.skey == "type_key") {
+    if (getter->skey == "type_key") {
         ret_val->v_str = (*tnode)->type_key();
         *ret_typeid = kStr;
     } else {
-        (*tnode)->VisitAttrs(&getter);
+        (*tnode)->VisitAttrs(getter);
         if (ret->ret_value.type_id != kNull) {
             ret->SetReturn(ret_val, ret_typeid);
         } else {
@@ -211,9 +211,9 @@ int TVMNodeListAttrNames(NodeHandle handle,
     API_BEGIN();
     ret->ret_vec_str.clear();
     TVMAPINode* tnode = static_cast<TVMAPINode*>(handle);
-    APIAttrDir dir;
-    dir.names = &(ret->ret_vec_str);
-    (*tnode)->VisitAttrs(&dir);
+    APIAttrDir *dir;
+    dir->names = &(ret->ret_vec_str);
+    (*tnode)->VisitAttrs(dir);
     ret->ret_vec_charp.clear();
     for (size_t i = 0; i < ret->ret_vec_str.size(); ++i) {
         ret->ret_vec_charp.push_back(ret->ret_vec_str[i].c_str());

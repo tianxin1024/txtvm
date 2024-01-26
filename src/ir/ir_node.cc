@@ -3,10 +3,12 @@
 #include "ir/IR.h"
 #include <memory>
 
-
 namespace dmlc {
+DMLC_REGISTRY_ENABLE(::tvm::NodeFactoryReg);
+}; // namespace dmlc
 
-using namespace Halide::Internal;
+namespace tvm {
+
 
 TVM_REGISTER_NODE_TYPE(FloatImm);
 TVM_REGISTER_NODE_TYPE(IntImm);
@@ -45,4 +47,4 @@ TVM_REGISTER_NODE_TYPE(Block);
 TVM_REGISTER_NODE_TYPE(IfThenElse);
 TVM_REGISTER_NODE_TYPE(Evaluate);
 
-}; // end of namespace dmlc
+}; // end of namespace tvm 

@@ -9,6 +9,7 @@ namespace tvm {
 
 using Halide::Type;
 using Halide::Expr;
+using namespace Halide::Internal;
 
 }; // end of namespace tvm
 
