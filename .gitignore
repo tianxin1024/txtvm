@@ -284,3 +284,4 @@ tests/cpp/expr_test
 tests/cpp/expr_test
 tests/cpp/expr.d
 tests/cpp/array_test
+debug

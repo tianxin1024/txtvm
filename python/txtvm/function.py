@@ -8,6 +8,7 @@ int32 = 1
 float32 = 2
 
 def const(value, dtype=None):
+
     if dtype is None:
         if isinstance(value, _Integral):
             dtype = 'int32'
