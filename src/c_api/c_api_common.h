@@ -4,7 +4,7 @@
 #include <dmlc/base.h>
 #include <dmlc/logging.h>
 #include <dmlc/thread_local.h>
-#include <txtvm/c_api.h>
+#include "tvm/c_api.h"
 #include <vector>
 #include <string>
 #include "c_api_registry.h"

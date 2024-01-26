@@ -1,9 +1,9 @@
 #ifndef TVM_C_API_C_API_REGISTRY_H_
 #define TVM_C_API_C_API_REGISTRY_H_
 
-#include "txtvm/base.h"
-#include "txtvm/expr.h"
-#include "txtvm/c_api.h"
+#include "tvm/base.h"
+#include "tvm/expr.h"
+#include "tvm/c_api.h"
 #include <memory>
 #include <limits>
 #include <string>
@@ -55,19 +55,16 @@ struct APIVariantValue {
     inline operator T() const {
         if (type_id == kNull) return T();
         CHECK_EQ(type_id, kNodeHandle);
-        std::shared_ptr<Node> x = sptr;
-        T inst;
-        inst.node_ = std::move(x);
-        return inst;
+        return T(sptr);
     }
 
     inline operator Expr() const {
         if (type_id == kNull) return Expr();
-        if (type_id == kLong) return IntConstant(operator int64_t());
-        if (type_id == kDouble) return FloatConstant(operator double());
+        if (type_id == kLong) return Expr(operator int64_t());
+        if (type_id == kDouble) return Expr(operator double());
         CHECK_EQ(type_id, kNodeHandle);
         std::shared_ptr<Node> x = sptr;
-        return Expr(std::move(x));
+        return Expr(sptr);
     }
 
     inline operator double() const {
