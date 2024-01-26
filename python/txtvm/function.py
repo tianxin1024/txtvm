@@ -16,14 +16,19 @@ def const(value, dtype=None):
             dtype = 'float32'
     return _function_internal._const(value, dtype)
 
-def _symbol(value):
-    """Convert a value to expression."""
-    if isinstance(value, _Number):
-        return const(value)
-    elif isinstance(value, list):
-        value = [_symbol(x) for x in value]
-        return _function_internal._Array(*value)
-    else:
-        return value
+
+def Var(name="tindex", dtype=int32):
+    """Create a new variable with specified name and dtype
+
+    Parameters
+    ----------
+    name : str
+        The name
+
+    dtype : int
+        The data type
+    """
+    return _function_internal._Var(name, dtype)
+
 
 _init_function_module("txtvm")
