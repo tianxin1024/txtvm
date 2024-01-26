@@ -3,7 +3,6 @@
 
 #include "base.h"
 #include "expr.h"
-#include "op.h"
 #include "tensor.h"
 #include "domain.h"
 #include "array.h"

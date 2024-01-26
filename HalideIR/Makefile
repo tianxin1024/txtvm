@@ -1,6 +1,6 @@
 DMLC_CORE_PATH ?= ../dmlc-core
 LDFLAGS = -pthread -lm
-CFLAGS =  -std=c++11 -Wall -O2\
+CFLAGS =  -std=c++11 -Wall -O0 -g \
 	 -Iinclude -I${DMLC_CORE_PATH}/include -Isrc -fPIC
 
 ifdef no_rtti

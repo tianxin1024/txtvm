@@ -1,6 +1,6 @@
 #include <dmlc/logging.h>
 #include <gtest/gtest.h>
-#include <txtvm/txtvm.h>
+#include <tvm/txtvm.h>
 
 TEST(Expr, Basic) {
     using namespace tvm;

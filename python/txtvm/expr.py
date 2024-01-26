@@ -1,15 +1,8 @@
 """Base class of symbolic expression"""
 from __future__ import absolute_import as _abs
-# from numbers import Number as _Number
-# from . import op as _op
-# from . import var_name as _name
 from ._ctypes._api import NodeBase, register_node
 from . import function as _func
-
-# __addop__ = None
-# __subop__ = None
-# __mulop__ = None
-# __divop__ = None
+from . import make as _make
 
 class Expr(object):
 
@@ -17,28 +10,28 @@ class Expr(object):
         return _func.format_str(self)
 
     def __add__(self, other):
-        return binary_op('+', self, other)
+        return _make.Add('+', self, other)
 
     def __radd__(self, other):
         return self.__add__(other)
 
     def __sub__(self, other):
-        return binary_op('-', self, other)
+        return _make.Sub('-', self, other)
 
     def __rsub__(self, other):
-        return binary_op('-', other, self)
+        return _make.Sub('-', other, self)
 
     def __mul__(self, other):
-        return binary_op('*', self, other)
+        return _make.Mul('*', self, other)
 
     def __rmul__(self, other):
-        return binary_op('*', other, self)
+        return _make.Mul('*', other, self)
 
     def __div__(self, other):
-        return binary_op('/', self, other)
+        return _make.Div('/', self, other)
 
     def __rdiv__(self, other):
-        return binary_op('/', other, self)
+        return _make.Div('/', other, self)
 
     def __truediv__(self, other):
         return self.__div__(other)
@@ -49,89 +42,127 @@ class Expr(object):
     def __neg__(self):
         return self.__mul__(-1)
 
-@register_node("IntImm")
-class IntImm(Expr):
+class ConstExpr(Expr):
     pass
 
-@register_node("UIntIm")
-class UIntImm(Expr):
+class BinaryOpExpr(Expr):
     pass
 
-@register_node("FloatImm")
-class FloatImm(Expr):
+class CmpExpr(Expr):
     pass
 
-# def _symbol(value):
-#     """Convert a value to expression."""
-#     if isinstance(value, Expr):
-#         return value
-#     elif isinstance(value, _Number):
-#         return ConstExpr(value)
-#     else:
-#         raise TypeError("type %s not supported" % str(type(value)))
+class LogicalExpr(Expr):
+    pass
 
-# class Var(Expr):
-#     """Variable, is a symbolic placeholder.
+@register_node
+class FloatImm(ConstExpr):
+    pass
 
-#     Each variable is uniquely identified by its address
-#     Note that name alone is not able to uniquely identify the var.
+@register_node
+class IntImm(ConstExpr):
+    pass
 
-#     Parameters
-#     ----------
-#     name : str
-#         optional name to the var.
-#     """
-#     def __init__(self, name=None):
-#         if name is None: name = 'index'
-#         self.name = _name.NameManager.current.get(name)
+@register_node
+class UIntImm(ConstExpr):
+    pass
 
+@register_node
+class StringImm(ConstExpr):
+    pass
 
-# class ConstExpr(Expr):
-#     """Constant expression."""
-#     def __init__(self, value):
-#         assert isinstance(value, _Number)
-#         self.value = value
+@register_node
+class Cast(Expr):
+    pass
 
-# class BinaryOpExpr(Expr):
-#     """Binary operator expression."""
-#     def __init__(self, op, lhs, rhs):
-#         self.op  = op
-#         self.lhs = _symbol(lhs)
-#         self.rhs = _symbol(rhs)
+@register_node
+class Variable(Expr):
+    pass
 
-#     def children(self):
-#         return (self.lhs, self.rhs)
+@register_node
+class Add(BinaryOpExpr):
+    pass
 
-# _op.binary_op_cls = BinaryOpExpr
+@register_node
+class Sub(BinaryOpExpr):
+    pass
 
-# class UnaryOpExpr(Expr):
-#     """Unary operator expression."""
-#     def __init__(self, op, src):
-#         self.op = op
-#         self.src = _symbol(src)
+@register_node
+class Mul(BinaryOpExpr):
+    pass
 
-#     def children(self):
-#         return (self.src,)
+@register_node
+class Div(BinaryOpExpr):
+    pass
 
-# class ReduceExpr(Expr):
-#     def __init__(self, op, src, rdom):
-#         self.op = op
-#         self.src = src
-#         self.rdom = rdom
+@register_node
+class Mod(BinaryOpExpr):
+    pass
 
-#     def children(self):
-#         return (self.src,)
+@register_node
+class Min(BinaryOpExpr):
+    pass
 
-# class TensorRefExpr(Expr):
-#     """Tensor reference expression, tensor[indices]"""
-#     def __init__(self, tensor, indices):
-#         self.tensor = tensor
-#         self.indices = indices
+@register_node
+class Max(BinaryOpExpr):
+    pass
 
-#     def children(self):
-#         return self.indices
+@register_node
+class EQ(CmpExpr):
+    pass
 
+@register_node
+class NE(CmpExpr):
+    pass
 
-# def const(value):
-#     """Return a constant value"""
-#     return ConstExpr(value)
+@register_node
+class LT(CmpExpr):
+    pass
+
+@register_node
+class LE(CmpExpr):
+    pass
+
+@register_node
+class GT(CmpExpr):
+    pass
+
+@register_node
+class GE(CmpExpr):
+    pass
+
+@register_node
+class And(LogicalExpr):
+    pass
+
+@register_node
+class Or(LogicalExpr):
+    pass
+
+@register_node
+class Not(LogicalExpr):
+    pass
+
+@register_node
+class Select(Expr):
+    pass
+
+@register_node
+class Load(Expr):
+    pass
+
+@register_node
+class Ramp(Expr):
+    pass
+
+@register_node
+class Broadcast(Expr):
+    pass
+
+@register_node
+class Call(Expr):
+    pass
+
+@register_node
+class Let(Expr):
+    pass
+

@@ -24,7 +24,7 @@ class NodeRef;
  * \brief Visitor class to each node content.
  *  The content is going to be called for each field.
  */
-class EXPORT AttrVisitor {
+class AttrVisitor {
  public:
 //! \cond Doxygen_Suppress
   virtual void Visit(const char* key, double* value) = 0;
@@ -33,7 +33,6 @@ class EXPORT AttrVisitor {
   virtual void Visit(const char* key, int* value) = 0;
   virtual void Visit(const char* key, bool* value) = 0;
   virtual void Visit(const char* key, std::string* value) = 0;
-  virtual void Visit(const char* key, void** value) = 0;
   virtual void Visit(const char* key, Type* value) = 0;
   virtual void Visit(const char* key, NodeRef* value) = 0;
   template<typename ENum,
@@ -50,7 +49,7 @@ class EXPORT AttrVisitor {
  * \brief base class of node container in DSL AST.
  *  All object's internal is stored as std::shared_ptr<Node>
  */
-class EXPORT Node {
+class Node {
  public:
   /*! \brief virtual destructor */
   virtual ~Node() {}

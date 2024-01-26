@@ -908,17 +908,10 @@ private:
         } else if (mul_a && mul_b &&
                    const_int(mul_a->b, &ia) &&
                    const_int(mul_b->b, &ib) &&
-                   ((ia % ib == 0) || (ib % ia == 0))) {
+                   ia % ib == 0) {
             // x*4 + y*2 -> (x*2 + y)*2
-            // x*2 + y*4 -> (x + y*2)*2
-            if (ia % ib == 0) {
-              Expr ratio = make_const(a.type(), div_imp(ia, ib));
-              expr = mutate((mul_a->a * ratio + mul_b->a) * mul_b->b);
-            }
-            else {
-              Expr ratio = make_const(a.type(), div_imp(ib, ia));
-              expr = mutate((mul_a->a + mul_b->a * ratio) * mul_a->b);
-            }
+            Expr ratio = make_const(a.type(), div_imp(ia, ib));
+            expr = mutate((mul_a->a * ratio + mul_b->a) * mul_b->b);
         } else if (a.same_as(op->a) && b.same_as(op->b)) {
             // If we've made no changes, and can't find a rule to apply, return the operator unchanged.
             expr = self;

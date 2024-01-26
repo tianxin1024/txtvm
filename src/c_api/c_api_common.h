@@ -7,6 +7,7 @@
 #include "tvm/c_api.h"
 #include <vector>
 #include <string>
+#include <exception>
 #include "c_api_registry.h"
 
 #define API_BEGIN() try {
