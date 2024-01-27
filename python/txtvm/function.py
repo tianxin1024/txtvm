@@ -31,4 +31,15 @@ def Var(name="tindex", dtype=int32):
     return _function_internal._Var(name, dtype)
 
 
+def convert(value):
+    """Convert a value to expression."""
+    if isinstance(value, _Number):
+        return const(value)
+    elif isinstance(value, list):
+        value = [convert(x) for x in value]
+        return _function_internal._Array(*value)
+    else:
+        return value
+
+
 _init_function_module("txtvm")

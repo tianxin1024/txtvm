@@ -54,6 +54,10 @@ class CmpExpr(Expr):
 class LogicalExpr(Expr):
     pass
 
+@register_node("Variable")
+class Var(Expr):
+    pass
+
 @register_node
 class FloatImm(ConstExpr):
     pass
