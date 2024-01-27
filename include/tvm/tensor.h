@@ -1,9 +1,12 @@
 #ifndef TVM_TENSOR_H_
 #define TVM_TENSOR_H_
 
-#include "expr.h"
+#include <string>
+#include <vector>
+#include "tvm/array.h"
+#include "ir/FunctionBase.h"
 #include "base.h"
-#include "array.h"
+#include "expr.h"
 
 namespace tvm {
 
@@ -24,13 +27,15 @@ inline FCompute GetFCompute(std::function<Expr(Var, Var, Var, Var)> f) {
     return [f] (const Array<Var>& i) { return f(i[0], i[1], i[2], i[3]); };
 }
 
-class Tensor : public NodeRef {
+using Halide::IR::FunctionRef;
+
+class Tensor : public FunctionRef {
 public:
     Tensor() {}
 
     explicit Tensor(Array<Expr> shape, 
                     std::string name = "tensor",
-                    DataType dtype = kFloat32);
+                    Type dtype = kFloat32);
 
     Tensor(Array<Expr> shape, FCompute fcompute, std::string name = "tensor");
     Tensor(Array<Expr> shape, std::function<Expr(Var)> f, std::string name = "tensor")
@@ -54,10 +59,6 @@ public:
 
     Expr operator()(Array<Expr> indices) const;
 
-    std::vector<Tensor> InputTensors() const;
-
-    bool IsRTensor() const;
-
     friend std::ostream& operator<<(std::ostream &os, const Tensor& t);
 };
 
@@ -78,13 +79,11 @@ public:
     void VisitAttrs(AttrVisitor* visitor) override {
         visitor->Visit("name", &name);
         visitor->Visit("dtype", &dtype);
+        visitor->Visit("dim_var", &dim_var);
+        visitor->Visit("shape", &shape);
+        visitor->Visit("source", &source);
     }
 
-    void VisitNodeRefFields(FNodeRefVisit fvisit) override {
-        fvisit("dim_index", &dim_index);
-        fvisit("shape", &shape);
-        fvisit("source", &source);
-    }
 };
 
 // implementations
