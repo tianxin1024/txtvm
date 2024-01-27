@@ -36,6 +36,8 @@ def test_stmt():
                          txtvm.make.Evaluate(0)))
 
 if __name__ == "__main__":
-    test_const()
-    test_make()
-    test_ir()
+    # test_const()
+    # test_make()
+    # test_ir()
+    test_basic()
+    test_stmt()

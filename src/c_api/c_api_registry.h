@@ -131,6 +131,7 @@ struct APIVariantValue {
     }
 
     inline operator std::string() const {
+        // std::cout << ">>> kStr: " << kStr << "type_id: " << type_id << std::endl;
         CHECK_EQ(type_id, kStr);
         return str;
     }

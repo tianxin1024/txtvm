@@ -80,4 +80,12 @@ TVM_REGISTER_API(_ArraySize)
 });
 
 
+TVM_REGISTER_API(_Range)
+.set_body([](const ArgStack& args, RetValue *ret) {
+    *ret = Range(args.at(0), args.at(1));
+})
+.add_argument("min", "Expr", "beginning of the range.")
+.add_argument("extent", "Expr", "extent of the range");
+
+
 }; // end of namespace tvm
