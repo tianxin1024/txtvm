@@ -24,6 +24,7 @@ using Halide::abs;
 using Halide::select;
 
 using Halide::Expr;
+using Halide::Internal::Stmt;
 using Var = Halide::VarExpr;
 
 }; // end of namespace tvm

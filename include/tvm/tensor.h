@@ -5,6 +5,8 @@
 #include <vector>
 #include "tvm/array.h"
 #include "ir/FunctionBase.h"
+#include <type_traits>
+
 #include "base.h"
 #include "expr.h"
 

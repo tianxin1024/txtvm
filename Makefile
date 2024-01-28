@@ -1,13 +1,71 @@
-export LDFLAGS = -pthread -lm
-export CFLAGS = -std=c++14 -Wall -O0 -g -Wno-unknown-pargmas -funroll-loops \
-	-Iinclude -Idmlc-core/include -IHalideIR/src -fPIC
+ROOTDIR = $(CURDIR)
+
+ifndef config
+ifneq ("$(wildcard ./config.mk)","")
+	config ?= config.mk
+else
+	config ?= make/config.mk
+endif
+endif
+
+include $(config)
+
 
 # specify tensor path
-.PHONY: clean all test
+.PHONY: clean install installdev all test doc pylint cpplint lint verilog cython2 web runtime runtime
 
-all: lib/libtvm.a lib/libtvm.so
+ifndef DMLC_CORE_PATH
+	DMLC_CORE_PATH = $(ROOTDIR)/dmlc-core
+endif
 
-LIB_HALIDE_IR = HalideIR/lib/libHalideIR.a
+ifndef DLPACK_PATH
+	DLPACK_PATH = $(ROOTDIR)/dlpack
+endif
+
+# THe source code dependencies
+LIB_HALIDEIR = HalideIR/lib/libHalideIR.a
+
+CC_SRC = $(filter-out src/contrib/%.cc src/runtime/%.cc,\
+			$(wildcard src/*/*.cc src/*/*/*.cc))
+METAL_SRC = $(wildcard src/runtime/metal/*.mm)
+CUDA_SRC = $(wildcard src/runtime/cuda/*.cc)
+OPENCL_SRC = $(wildcard src/runtime/opencl/*.cc)
+RPC_SRC = $(wildcard src/runtime/rpc/*.cc)
+RUNTIME_SRC = $(widlcard src//runtime/*.cc)
+
+# Objectives
+METAL_OBJ = $(patsubst src/%.mm, build/%.o, $(METAL_SRC))
+CUDA_OBJ = $(patsubst src/%.cc, build/%.o, $(CUDA_SRC))
+OPENCL_OBJ = $(patsubst src/%.cc, build/%.o, $(OPENCL_SRC))
+RPC_OBJ = $(patsubst src/%.cc, build/%.o, $(RPC_SRC))
+CC_OBJ = $(patsubst src/%.cc, build/%.o, $(CC_SRC))
+RUNTIME_OBJ = $(patsubst src/%.cc, build/%.o, $(RUNTIME_SRC))
+CONTRIB_OBJ = 
+
+UNAME_S := $(shell uname -s)
+
+# Deps
+ALL_DEP = $(CC_OBJ) $(CONTRIB_OBJ) $(LIB_HALIDEIR)
+RUNTIME_DEP = $(RUNTIME_OBJ)
+
+# The flags
+LDFLAGS = -pthread -lm -ldl
+INCLUDE_FLAGS = -Iinclude -I$(DLPACK_PATH)/include -I$(DMLC_CORE_PATH)/include -IHalideIR/src -Itopi/include
+CFLAGS = -std=c++11 -Wall -O0 -g $(INCLUDE_FLAGS) -fPIC
+LLVM_CFLAGS = -fno-rtti -DDMLC_ENABLE_RTTI=0
+FRAMEWORKS = 
+OBJCFLAGS = -fno-objc-arc
+EMCC_FLAGS = -s RESERVED_FUNCTION_POINTERS=2 -s NO_EXIT_RUNTIME=1 -s MAIN_MODULE=1 -DDMLC_LOG_STACK_TRACK=0 \
+			 -std=c++11 -Oz $(INCLUDE_FLAGS)
+
+
+# Dependency specific rules
+ifdef CUDA_PATH
+	NVCC=$(CUDA_PATH)/bin/nvcc
+	CFLAGS += -I$(CUDA_PATH)/include
+	LDFLAGS += -L$(CUDA_PATH)/lib64
+endif
+
 
 SRC = $(wildcard src/*.cc src/*/*.cc)
 ALL_OBJ = $(patsubst src/%.cc, build/%.o, $(SRC))
