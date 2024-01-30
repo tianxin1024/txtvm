@@ -1,3 +1,20 @@
+/*!
+ *  Copyright (c) 2016 by Contributors
+ * \file c_runtime_api.h
+ * \brief TVM runtime library.
+ *
+ *  The philosophy of TVM project is to customize the compilation
+ *  stage to generate code that can used by other projects transparently.
+ *  So this is a minimum runtime code gluing, and some limited
+ *  memory management code to enable quick testing.
+ *
+ *  The runtime API is independent from TVM compilation stack and can
+ *  be linked via libtvm_runtime.
+ *
+ *  The common flow is:
+ *   - Use TVMFuncListGlobalNames to get global function name
+ *   - Use TVMFuncCall to call these functions.
+ */
 #ifndef TVM_RUNTIME_C_RUNTIME_API_H_
 #define TVM_RUNTIME_C_RUNTIME_API_H_
 
@@ -24,10 +41,8 @@
 #endif
 #endif
 
-
 // TVM Runtime is DLPack compatible.
 #include <dlpack/dlpack.h>
-
 
 #ifdef __cplusplus
 TVM_EXTERN_C {
@@ -38,7 +53,6 @@ TVM_EXTERN_C {
 /*! \brief type of array index. */
 typedef int64_t tvm_index_t;
 
-
 /*! \brief Extension device types in TVM */
 typedef enum {
   /*! \brief Metal buffer. */
@@ -46,7 +60,6 @@ typedef enum {
   /*! \brief Simulated on board RAM */
   kVPI = 9
 } TVMDeviceExtType;
-
 
 /*!
  * \brief The type code in TVMType
@@ -67,7 +80,6 @@ typedef enum {
   kStr = 11U,
   kBytes = 12U
 } TVMTypeCode;
-
 
 /*!
  * \brief The data type used in TVM Runtime.
@@ -91,7 +103,6 @@ typedef DLContext TVMContext;
  */
 typedef DLTensor TVMArray;
 
-
 /*!
  * \brief Union type of values
  *  being passed through API and function calls.
@@ -113,7 +124,6 @@ typedef struct {
   const char* data;
   size_t size;
 } TVMByteArray;
-
 
 /*! \brief Handle to TVM runtime modules. */
 typedef void* TVMModuleHandle;
@@ -418,7 +428,6 @@ TVM_DLL int TVMSetStream(int device_type, int device_id, TVMStreamHandle handle)
 TVM_DLL int TVMSynchronize(int device_type, int device_id, TVMStreamHandle stream);
 
 #ifdef __cplusplus
-} // TVM_EXTERN_C
+}  // TVM_EXTERN_C
 #endif
-
-#endif // TVM_RUNTIME_C_RUNTIME_API_H_
+#endif  // TVM_RUNTIME_C_RUNTIME_API_H_

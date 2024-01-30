@@ -51,7 +51,7 @@ RUNTIME_DEP = $(RUNTIME_OBJ)
 # The flags
 LDFLAGS = -pthread -lm -ldl
 INCLUDE_FLAGS = -Iinclude -I$(DLPACK_PATH)/include -I$(DMLC_CORE_PATH)/include -IHalideIR/src -Itopi/include
-CFLAGS = -std=c++11 -Wall -O0 -g $(INCLUDE_FLAGS) -fPIC
+CFLAGS = -std=c++11 -Wall -O2 $(INCLUDE_FLAGS) -fPIC
 LLVM_CFLAGS = -fno-rtti -DDMLC_ENABLE_RTTI=0
 FRAMEWORKS = 
 OBJCFLAGS = -fno-objc-arc
@@ -157,34 +157,34 @@ test: $(TEST)
 # verilog: $(VER_LIBS)
 
 # Special rules for LLVM related modules.
-build/codegen/llvm/%.o: src/codegen/llvm/%.cc
-	@mkdir -p $(@D)
-	@$(CXX) $(CFLAGS) $(LLVM_CFLAGS) -MM -MT build/codegen/llvm/$*.o $< >build/codegen/llvm/$*.d
-	@$(CXX) -c $(CFLAGS) $(LLVM_CFLAGS) -c $^ -o $@
+# build/codegen/llvm/%.o: src/codegen/llvm/%.cc
+# 	@mkdir -p $(@D)
+# 	$(CXX) $(CFLAGS) $(LLVM_CFLAGS) -MM -MT build/codegen/llvm/$*.o $< >build/codegen/llvm/$*.d
+# 	$(CXX) -c $(CFLAGS) $(LLVM_CFLAGS) -c $^ -o $@
 
-build/runtime/metal/%.o: src/runtime/metal/%.mm
-	@mkdir -p $(@D)
-	@$(CXX) $(OBJCFLAGS) $(CFLAGS) -MM -MT build/runtime/metal/$*.o $< >build/runtime/metal/%*.d
-	@$(CXX) $(OBJCFLAGS) -c $(CFLAGS) -c $< -o $@
+# build/runtime/metal/%.o: src/runtime/metal/%.mm
+# 	@mkdir -p $(@D)
+# 	$(CXX) $(OBJCFLAGS) $(CFLAGS) -MM -MT build/runtime/metal/$*.o $< >build/runtime/metal/%*.d
+# 	$(CXX) $(OBJCFLAGS) -c $(CFLAGS) -c $< -o $@
 
+# build/%.o: src/%.cc
+# 	@mkdir -p $(@D)
+# 	$(CXX) $(CFLAGS) -MM -MT build/$*.o $< >build/$*.d
+# 	$(CXX) -c $(CFLAGS) -c $< -o $@
 
-build/%.o: src/%.cc
-	@mkdir -p $(@D)
-	$(CXX) $(CFLAGS) -MM -MT build/$*.o $< >build/$*.d
-	$(CXX) -c $(CFLAGS) -c $< -o $@
+# lib/libtvm.dylib: $(ALL_DEP) $(RUNTIME_DEP)
+# 	@mkdir -p $(@D)
+# 	@$(CXX) $(CFLAGS) $(FRAMEWORKS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAFS)
 
-lib/libtvm.dylib: $(ALL_DEP) $(RUNTIME_DEP)
-	@mkdir -p $(@D)
-	@$(CXX) $(CFLAGS) $(FRAMEWORKS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAFS)
-
-lib/libtvm_runtime.dylib: $(RUNTIME_DEP)
-	@mkdir -p $(@D)
-	@$(CXX) $(CFLAGS) $(FRAMEWORKS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAFS)
+# lib/libtvm_runtime.dylib: $(RUNTIME_DEP)
+# 	@mkdir -p $(@D)
+# 	@$(CXX) $(CFLAGS) $(FRAMEWORKS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAFS)
 
 lib/libtvm.so: $(ALL_DEP) $(RUNTIME_DEP)
 	@mkdir -p $(@D)
-	@$(CXX) $(CFLAGS) $(FRAMEWORKS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAGS)
+	$(CXX) $(CFLAGS) $(FRAMEWORKS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAGS)
 
+# $(info $(ALL_DEP))
 lib/libtvm_runtime.so: $(RUNTIME_DEP)
 	@mkdir -p $(@D)
 	@$(CXX) $(CFLAGS) $(FRAMEWORKS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAFS)

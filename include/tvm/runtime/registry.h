@@ -1,9 +1,33 @@
+/*!
+ *  Copyright (c) 2017 by Contributors
+ * \file registry.h
+ * \brief This file defines the TVM global function registry.
+ *
+ *  The registered functions will be made available to front-end
+ *  as well as backend users.
+ *
+ *  The registry stores type-erased functions.
+ *  Each registered function is automatically exposed
+ *  to front-end language(e.g. python).
+ *
+ *  Front-end can also pass callbacks as PackedFunc, or register
+ *  then into the same global registry in C++.
+ *  The goal is to mix the front-end language and the TVM back-end.
+ *
+ * \code
+ *   // register the function as MyAPIFuncName
+ *   TVM_REGISTER_GLOBAL(MyAPIFuncName)
+ *   .set_body([](TVMArgs args, TVMRetValue* rv) {
+ *     // my code.
+ *   });
+ * \endcode
+ */
 #ifndef TVM_RUNTIME_REGISTRY_H_
 #define TVM_RUNTIME_REGISTRY_H_
 
 #include <string>
 #include <vector>
-#include "packed_func.h"
+#include "./packed_func.h"
 
 namespace tvm {
 namespace runtime {
