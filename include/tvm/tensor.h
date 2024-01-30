@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "tvm/array.h"
+#include "tvm/container.h"
 #include "ir/FunctionBase.h"
 #include <type_traits>
 
@@ -13,21 +13,7 @@
 namespace tvm {
 
 class TensorNode;
-
-using FCompute = std::function<Expr (const Array<Var>& i)>;
-
-inline FCompute GetFCompute(std::function<Expr(Var x)> f) {
-    return [f] (const Array<Var>& i) { return f(i[0]); };
-}
-inline FCompute GetFCompute(std::function<Expr(Var, Var)> f) {
-    return [f] (const Array<Var>& i) { return f(i[0], i[1]); };
-}
-inline FCompute GetFCompute(std::function<Expr(Var, Var, Var)> f) {
-    return [f] (const Array<Var>& i) { return f(i[0], i[1], i[2]); };
-}
-inline FCompute GetFCompute(std::function<Expr(Var, Var, Var, Var)> f) {
-    return [f] (const Array<Var>& i) { return f(i[0], i[1], i[2], i[3]); };
-}
+class OperationNode;
 
 using Halide::IR::FunctionRef;
 
@@ -35,9 +21,7 @@ class Tensor : public FunctionRef {
 public:
     Tensor() {}
 
-    explicit Tensor(Array<Expr> shape, 
-                    std::string name = "tensor",
-                    Type dtype = kFloat32);
+    explicit Tensor(std::shared_ptr<Node> n) : NodeRef(n) {}
 
     Tensor(Array<Expr> shape, FCompute fcompute, std::string name = "tensor");
     Tensor(Array<Expr> shape, std::function<Expr(Var)> f, std::string name = "tensor")

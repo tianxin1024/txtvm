@@ -12,7 +12,7 @@ include $(config)
 
 
 # specify tensor path
-.PHONY: clean install installdev all test doc pylint cpplint lint verilog cython2 web runtime runtime
+.PHONY: clean install installdev all test doc pylint cpplint lint cython2 web runtime runtime
 
 ifndef DMLC_CORE_PATH
 	DMLC_CORE_PATH = $(ROOTDIR)/dmlc-core
@@ -153,8 +153,8 @@ include tests/cpp/unittest.mk
 
 test: $(TEST)
 
-include verilog/verilog.mk
-verilog: $(VER_LIBS)
+# include verilog/verilog.mk
+# verilog: $(VER_LIBS)
 
 # Special rules for LLVM related modules.
 build/codegen/llvm/%.o: src/codegen/llvm/%.cc
