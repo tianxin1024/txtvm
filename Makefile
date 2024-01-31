@@ -1,5 +1,3 @@
-ROOTDIR = $(CURDIR)
-
 ifndef config
 ifneq ("$(wildcard ./config.mk)","")
 	config ?= config.mk
@@ -184,7 +182,6 @@ lib/libtvm.so: $(ALL_DEP) $(RUNTIME_DEP)
 	@mkdir -p $(@D)
 	$(CXX) -o $@ $(CFLAGS) $(FRAMEWORKS) -shared $(filter %.o %.a, $^) $(LDFLAGS)
 
-$(info $(RUNTIME_DEP))
 lib/libtvm_runtime.so: $(RUNTIME_DEP)
 	@mkdir -p $(@D)
 	@$(CXX) -o $@ $(CFLAGS) $(FRAMEWORKS) -shared $(filter %.o %.a, $^) $(LDFLAFS)

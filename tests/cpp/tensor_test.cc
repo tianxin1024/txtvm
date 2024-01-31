@@ -1,22 +1,21 @@
 #include <dmlc/logging.h>
 #include <gtest/gtest.h>
-#include <tvm/txtvm.h>
+#include <tvm/tvm.h>
 
 TEST(Tensor, Basic) {
     using namespace tvm;
     Var m("m"), n("n"), l("l");
-    Tensor A({m, l}, "A");
-    Tensor B({n, l}, "B");
-    // RDomain rd({{0, l}});
 
-    auto C = Tensor({m, n}, [&](Var i, Var j) {
-        return sum(A(i, rd.i0()) * B(j, rd.i0()), rd);
+    Tensor A = placeholder({m, l}, Float(32), "A");
+    Tensor B = placeholder({m, l}, Float(32), "B");
+
+
+    auto C = compute({m, n}, [&](Var i, Var j) {
+      return A[i][j];
     }, "C");
 
-    // auto inputs = C.InputTensors();
-    // CHECK(inputs[0] == A);
-    // CHECK(inputs[1] == B);
-    // CHECK(C.IsRTensor());
+    Tensor::Slice x = A[n];
+
 }
 
 int main (int argc, char ** argv) {
