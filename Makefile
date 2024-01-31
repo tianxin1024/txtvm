@@ -167,10 +167,10 @@ test: $(TEST)
 # 	$(CXX) $(OBJCFLAGS) $(CFLAGS) -MM -MT build/runtime/metal/$*.o $< >build/runtime/metal/%*.d
 # 	$(CXX) $(OBJCFLAGS) -c $(CFLAGS) -c $< -o $@
 
-# build/%.o: src/%.cc
-# 	@mkdir -p $(@D)
-# 	$(CXX) $(CFLAGS) -MM -MT build/$*.o $< >build/$*.d
-# 	$(CXX) -c $(CFLAGS) -c $< -o $@
+build/%.o: src/%.cc
+	@mkdir -p $(@D)
+	$(CXX) $(CFLAGS) -MM -MT build/$*.o $< >build/$*.d
+	$(CXX) -c $(CFLAGS) -c $< -o $@
 
 # lib/libtvm.dylib: $(ALL_DEP) $(RUNTIME_DEP)
 # 	@mkdir -p $(@D)
@@ -182,12 +182,12 @@ test: $(TEST)
 
 lib/libtvm.so: $(ALL_DEP) $(RUNTIME_DEP)
 	@mkdir -p $(@D)
-	$(CXX) $(CFLAGS) $(FRAMEWORKS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAGS)
+	$(CXX) -o $@ $(CFLAGS) $(FRAMEWORKS) -shared $(filter %.o %.a, $^) $(LDFLAGS)
 
-# $(info $(ALL_DEP))
+$(info $(RUNTIME_DEP))
 lib/libtvm_runtime.so: $(RUNTIME_DEP)
 	@mkdir -p $(@D)
-	@$(CXX) $(CFLAGS) $(FRAMEWORKS) -shared -o $@ $(filter %.o %.a, $^) $(LDFLAFS)
+	@$(CXX) -o $@ $(CFLAGS) $(FRAMEWORKS) -shared $(filter %.o %.a, $^) $(LDFLAFS)
 
 lint:
 	python dmlc-core/scripts/lint.py txtvm cpp include src
