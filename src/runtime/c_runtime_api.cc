@@ -25,9 +25,9 @@ namespace runtime {
  */
 inline std::string DeviceName(int type) {
   switch (type) {
-    case kCPU: return "cpu";
-    case kGPU: return "gpu";
-    case kOpenCL: return "opencl";
+    case kDLCPU: return "cpu";
+    case kDLGPU: return "gpu";
+    case kDLOpenCL: return "opencl";
     case kMetal: return "metal";
     case kVPI: return "vpi";
     default: LOG(FATAL) << "unknown type =" << type; return "Unknown";
@@ -124,7 +124,7 @@ inline void TVMArrayFree_(TVMArray* arr) {
 
 inline void VerifyType(int dtype_code, int dtype_bits, int dtype_lanes) {
   CHECK_GE(dtype_lanes, 1);
-  if (dtype_code == kFloat) {
+  if (dtype_code == kDLFloat) {
     CHECK_EQ(dtype_bits % 32, 0);
   } else {
     CHECK_EQ(dtype_bits % 8, 0);
@@ -380,10 +380,10 @@ int TVMArrayCopyFromTo(TVMArrayHandle from,
   CHECK_EQ(from_size, to_size)
       << "TVMArrayCopyFromTo: The size must exactly match";
   TVMContext ctx = from->ctx;
-  if (ctx.device_type == kCPU) {
+  if (ctx.device_type == kDLCPU) {
     ctx = to->ctx;
   } else {
-    CHECK(to->ctx.device_type == kCPU ||
+    CHECK(to->ctx.device_type == kDLCPU ||
           to->ctx.device_type == from->ctx.device_type)
         << "Can not copy across different ctx types directly";
   }
@@ -399,7 +399,7 @@ int TVMArrayCopyFromBytes(TVMArrayHandle handle,
                           size_t nbytes) {
   API_BEGIN();
   TVMContext cpu_ctx;
-  cpu_ctx.device_type = kCPU;
+  cpu_ctx.device_type = kDLCPU;
   cpu_ctx.device_id = 0;
   size_t arr_size = GetDataSize(handle);
   CHECK_EQ(arr_size, nbytes)
@@ -416,7 +416,7 @@ int TVMArrayCopyToBytes(TVMArrayHandle handle,
                         size_t nbytes) {
   API_BEGIN();
   TVMContext cpu_ctx;
-  cpu_ctx.device_type = kCPU;
+  cpu_ctx.device_type = kDLCPU;
   cpu_ctx.device_id = 0;
   size_t arr_size = GetDataSize(handle);
   CHECK_EQ(arr_size, nbytes)

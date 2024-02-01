@@ -15,7 +15,19 @@ TEST(Tensor, Basic) {
     }, "C");
 
     Tensor::Slice x = A[n];
+}
 
+TEST(Tensor, Reduce) {
+    using namespace tvm;
+    Var m("m"), n("n"), l("l");
+    Tensor A = placeholder({m, l}, Float(32), "A");
+    Tensor B = placeholder({n, l}, Float(32), "B");
+    IterVar rv = reduce_axis(Range{0, 1}, "k");
+
+    auto C = compute({m, n}, [&](Var i, Var j) {
+            return sum(max(1 + A[i][rv] + 1, B[j][rv]), {rv});
+        }, "C");
+    LOG(INFO) << C->op.as<ComputeOpNode>()->body;
 }
 
 int main (int argc, char ** argv) {
