@@ -1,3 +1,5 @@
+ROOTDIR = $(CURDIR)
+
 ifndef config
 ifneq ("$(wildcard ./config.mk)","")
 	config ?= config.mk
@@ -8,9 +10,7 @@ endif
 
 include $(config)
 
-
-# specify tensor path
-.PHONY: clean install installdev all test doc pylint cpplint lint cython2 web runtime runtime
+.PHONY: clean install installdev all test doc pylint cpplint lint cython2 web runtime
 
 ifndef DMLC_CORE_PATH
 	DMLC_CORE_PATH = $(ROOTDIR)/dmlc-core
@@ -29,7 +29,7 @@ METAL_SRC = $(wildcard src/runtime/metal/*.mm)
 CUDA_SRC = $(wildcard src/runtime/cuda/*.cc)
 OPENCL_SRC = $(wildcard src/runtime/opencl/*.cc)
 RPC_SRC = $(wildcard src/runtime/rpc/*.cc)
-RUNTIME_SRC = $(widlcard src//runtime/*.cc)
+RUNTIME_SRC = $(wildcard src//runtime/*.cc)
 
 # Objectives
 METAL_OBJ = $(patsubst src/%.mm, build/%.o, $(METAL_SRC))
