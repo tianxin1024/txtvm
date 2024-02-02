@@ -285,3 +285,9 @@ tests/cpp/expr_test
 tests/cpp/expr.d
 tests/cpp/array_test
 debug
+tests/cpp/ir_mutator.d
+tests/cpp/ir_simplify.d
+tests/cpp/ir_mutator_test
+tests/cpp/ir_simplify_test
+tests/cpp/ir_ssa.d
+tests/cpp/ir_ssa_test
